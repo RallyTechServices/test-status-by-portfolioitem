@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Status by Portfolio Item</title>
+    <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
+    <!--  Build Date: Wed Mar 16 2016 12:17:05 GMT-0400 (EDT) -->
+    
+    <script type="text/javascript">
+        var APP_BUILD_DATE = "Wed Mar 16 2016 12:17:05 GMT-0400 (EDT)";
+        var CHECKSUM = 12096917119;
+    </script>
+    
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function() {
+             
+/**
+ * A link that pops up a version dialog box
+ */
+
+Ext.define('Rally.technicalservices.InfoLink',{
+    extend: 'Rally.ui.dialog.Dialog',
+    alias: 'widget.tsinfolink',
+    
+    /**
+     * @cfg {String} informationHtml
+     * Additional text to be displayed on the popup dialog (for exmaple,
+     * to add a description of the app's use or functionality)
+     */
+    informationHtml: null,
+    
+    /**
+     * 
+     * cfg {String} title
+     * The title for the dialog box
+     */
+    title: "Build Information",
+    
+    defaults: { padding: 5, margin: 5 },
+
+    closable: true,
+     
+    draggable: true,
+
+    autoShow: true,
+   
+    width: 350, 
+    
+    initComponent: function() {
+        var id = Ext.id(this);
+        this.title =  "<span class='icon-help'> </span>" + this.title;
+        this.callParent(arguments);
+    },
+    
+    _generateChecksum: function(string){
+        var chk = 0x12345678,
+            i;
+        string = string.replace(/var CHECKSUM = .*;/,"");
+        string = string.replace(/\s/g,"");  //Remove all whitespace from the string.
+        
+        for (i = 0; i < string.length; i++) {
+            chk += (string.charCodeAt(i) * i);
+        }
+    
+        return chk;
+    },
+    
+    _checkChecksum: function(container) {
+        var deferred = Ext.create('Deft.Deferred');
+        console.log("_checkChecksum", container);
+        var me = this;
+        
+        Ext.Ajax.request({
+            url: document.URL,
+            params: {
+                id: 1
+            },
+            success: function (response) {
+                text = response.responseText;
+                if ( CHECKSUM ) {
+                    if ( CHECKSUM !== me._generateChecksum(text) ) {
+                        console.log("Checksums don't match!");
+                        deferred.resolve(false);
+                        return;
+                    }
+                }
+                deferred.resolve(true);
+            }
+        });
+        
+        return deferred.promise;
+    },
+    
+    afterRender: function() {
+        var app = Rally.getApp();
+        
+        if (! app.isExternal() ) {
+                
+            this._checkChecksum(app).then({
+                scope: this,
+                success: function(result){
+                    if ( !result ) {
+                        this.addDocked({
+                            xtype:'container',
+                            cls: 'build-info',
+                            padding: 2,
+                            html:'<span class="icon-warning"> </span>Checksums do not match'
+                        });
+                    }
+                },
+                failure: function(msg){
+                    console.log("oops:",msg);
+                }
+            });
+        } else {
+            this.addDocked({
+                xtype:'container',
+                cls: 'build-info',
+                padding: 2,
+                html:'... Running externally'
+            });
+        }
+        this.callParent(arguments);
+    },
+    
+    beforeRender: function() {
+        var me = this;
+        this.callParent(arguments);
+
+        if (this.informationHtml) {
+            this.addDocked({
+                xtype: 'component',
+                componentCls: 'intro-panel',
+                padding: 2,
+                html: this.informationHtml
+            });
+        }
+        
+        this.addDocked({
+            xtype:'container',
+            cls: 'build-info',
+            padding: 2,
+            html:"This app was created by the Rally Technical Services Team."
+        });
+        
+        if ( APP_BUILD_DATE ) {
+            this.addDocked({
+                xtype:'container',
+                cls: 'build-info',
+                padding: 2,
+                html:'Build date/time: ' + APP_BUILD_DATE
+            });
+        }
+    }
+});
+
+/*
+ */
+Ext.define('Rally.technicalservices.Logger',{
+    constructor: function(config){
+        Ext.apply(this,config);
+    },
+    log: function(args){
+        var timestamp = "[ " + Ext.util.Format.date(new Date(), "Y-m-d H:i:s.u") + " ]";
+        //var output_args = arguments;
+        //output_args.unshift( [ "[ " + timestamp + " ]" ] );
+        //output_args = Ext.Array.push(output_args,arguments);
+        
+        var output_args = [];
+        output_args = Ext.Array.push(output_args,[timestamp]);
+        output_args = Ext.Array.push(output_args, Ext.Array.slice(arguments,0));
+
+        window.console && console.log.apply(console,output_args);
+    }
+
+});
+
+Ext.define('Rally.technicalservices.PortfolioTestStatusRow',{
+    constructor: function(config) {
+        this.portfolioItem = config.portfolioItem;
+        this.testCases = config.testCases;
+    },
+    getDataRow: function(){
+        return {
+            drop: 'drop',
+            subject: this.portfolioItem.get('Name'),
+            actual: this._getActual(),
+            plan: this._getPlan(),
+            passRate: this._getPassRate(),
+            total: this.testCases.length,
+            certificationDate: this.portfolioItem.get('PlannedEndDate'),
+            comments: this._getComments(),
+
+        };
+    },
+    _getActual: function(){
+        if (this.testCases.length > 0){
+            console.log('_etActual',this._getTestCasesRun(), this.testCases.length);
+            return this._getTestCasesRun()/this.testCases.length;
+        }
+        return 0;
+    },
+    _getPlan: function(){
+        var today = new Date(),
+            startDate = this.portfolioItem.get('PlannedStartDate') || this.portfolioItem.get('ActualStartDate') || null,
+            endDate = this.portfolioItem.get('PlannedEndDate') || this.portfolioItem.get('ActualEndDate') || null;
+
+        if (startDate && endDate){
+            if (endDate < startDate){
+                var tmp = endDate;
+                endDate = startDate;
+                startDate = tmp;
+            }
+            console.log('_getPlan', endDate, startDate
+            );
+            var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
+                currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
+
+            if (today >= startDate && today <= endDate){
+                return totalRange > 0 ? currentRange/totalRange : 0;
+            }
+
+            if (today > endDate){
+                return 1;
+            }
+            //if none of the above, then today is < start date and planned = 0
+        }
+        return 0;
+    },
+    _getTestCasesRun: function(){
+        var run = 0;
+        _.each(this.testCases, function(tc){
+            if (tc.get('LastRun')){
+                run++;
+            }
+        });
+        return run;
+    },
+    _getPassRate: function(){
+        var passed = 0,
+            passVerdicts = ['Pass'],
+            total = this.testCases.length;
+
+        _.each(this.testCases, function(tc){
+            if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
+                passed++;
+            }
+        });
+
+        if (total > 0){
+            return passed/total;
+        }
+        return 0;
+    },
+    _getCertificationDate: function(){
+        return 'certification Date';
+    },
+    _getComments: function(){
+        return 'comments';
+    }
+});
+
+Ext.define('Rally.technicalservices.Toolbox',{
+    singleton: true,
+    fetchWsapiRecords: function(config){
+        var deferred = Ext.create('Deft.Deferred');
+
+        Ext.create('Rally.data.wsapi.Store', config).load({
+            callback: function(records, operation, success){
+                if (success){
+                    deferred.resolve(records);
+                } else {
+                    deferred.reject(Ext.String.format("Error getting {0} for {1}: {2}",config, operation.error.errors.join(',')));
+                }
+            }
+        });
+        return deferred;
+    },
+    fetchPortfolioItemTypes: function(){
+        var deferred = Ext.create('Deft.Deferred'),
+            store = Ext.create('Rally.data.wsapi.Store', {
+                model: 'TypeDefinition',
+                fetch: ['TypePath', 'Ordinal','Name'],
+                filters: [
+                    {
+                        property: 'Parent.Name',
+                        operator: '=',
+                        value: 'Portfolio Item'
+                    },
+                    {
+                        property: 'Creatable',
+                        operator: '=',
+                        value: 'true'
+                    }
+                ],
+                sorters: [{
+                    property: 'Ordinal',
+                    direction: 'ASC'
+                }]
+            });
+
+        store.load({
+            callback: function(records, operation, success){
+                if (success){
+                    var portfolioItemTypes = new Array(records.length);
+                    _.each(records, function(d){
+                        //Use ordinal to make sure the lowest level portfolio item type is the first in the array.
+                        var idx = Number(d.get('Ordinal'));
+                        portfolioItemTypes[idx] = d.getData();
+                    });
+                    deferred.resolve(portfolioItemTypes);
+                } else {
+                    var error_msg = '';
+                    if (operation && operation.error && operation.error.errors){
+                        error_msg = operation.error.errors.join(',');
+                    }
+                    deferred.reject('Error loading Portfolio Item Types:  ' + error_msg);
+                }
+            }
+        });
+        return deferred.promise;
+    }
+});
+Ext.define("test-status-by-portfolio-item", {
+    extend: 'Rally.app.App',
+    componentCls: 'app',
+    logger: new Rally.technicalservices.Logger(),
+    defaults: { margin: 10 },
+    config: {
+        defaultSettings: {
+            selectPortfolioType: 'PortfolioItem/Theme',
+            commentsField: 'Notes'
+        }
+    },
+    items: [
+        {xtype:'container',itemId:'message_box',tpl:'Hello, <tpl>{_refObjectName}</tpl>'},
+        {xtype:'container',itemId:'display_box'}
+    ],
+
+    integrationHeaders : {
+        name : "test-status-by-portfolio-item"
+    },
+
+    featureFetch: ['ObjectID','Name'], //['ObjectID','FormattedID','Name','PlannedStartDate','PlannedEndDate'],
+    testCaseFetch: ['ObjectID','FormattedID','WorkProduct','Type','LastVerdict','LastRun'],
+
+    launch: function() {
+        Rally.technicalservices.Toolbox.fetchPortfolioItemTypes().then({
+            success: function(portfolioItemTypes){
+                this.portfolioItemTypes = portfolioItemTypes;
+                this._addSelector();
+            },
+            failure: function(msg){
+                this._showError(msg);
+            },
+            scope: this
+        });
+    },
+    _addSelector: function(){
+        var portfolioItemType = this.getSetting('selectPortfolioType');
+
+        this.removeAll();
+
+        var cb = this.add({
+            xtype: 'rallycombobox',
+            itemId: 'cb-portfolio-item',
+            fieldLabel: 'Portfolio Item',
+            labelAlign: 'right',
+            storeConfig: {
+                model: portfolioItemType,
+                remoteFilter: false,
+                autoLoad: true
+            },
+            width: 300
+        });
+        cb.on('change', this._fetchGridboardData, this);
+    },
+    _showError: function(msg){
+        Rally.ui.notify.Notifier.showError({message: msg});
+    },
+    _fetchGridboardData: function(cb){
+        var portfolioItem = cb.getRecord(),
+            featureConfig = this._getFeatureConfig(portfolioItem),
+            me = this;
+
+        this.logger.log('_fetchGridboardData',featureConfig, portfolioItem);
+
+        if (this.down('rallygridboard')){
+            this.down('rallygridboard').destroy();
+        }
+
+        Ext.create('Rally.data.wsapi.TreeStoreBuilder').build({
+            models: featureConfig.models,
+            enableHierarchy: true,
+            autoLoad: true
+        }).then({
+            success: function (store) {
+                //store.on('load', this._fetchUserStories, this);
+                me.add({
+                    xtype: 'rallygridboard',
+                    context: this.getContext(),
+                    modelNames: featureConfig.models,
+                    toggleState: 'grid',
+                    stateful: false,
+                    stateId: this.getContext().getScopedStateId('grid-xyz'),
+                    gridConfig: {
+                        store: store,
+                        storeConfig: {
+                            filters: featureConfig.filters
+                        },
+                        columnCfgs: this._getColumnCfgs()
+                    },
+                    height: this.getHeight()
+                });
+            },
+            failure: function(msg){
+                me._showError(msg);
+            },
+            scope: me
+        });
+    },
+    _fetchData: function(cb){
+        var portfolioItem = cb.getRecord(),
+            featureConfig = this._getFeatureConfig(portfolioItem);
+
+        Rally.technicalservices.Toolbox.fetchWsapiRecords(featureConfig).then({
+            success: function(records){
+                this.logger.log('fetchWsapiRecords', records);
+                this._fetchUserStories(records);
+            },
+            failure: function(msg){
+                this._showError(msg);
+            },
+            scope: this
+        });
+
+    },
+    _fetchUserStories: function(records){
+        this.logger.log('_fetchUserStories', records);
+        var configs = this._getStoryConfigs(records),
+            promises = _.map(configs, function(config) { return Rally.technicalservices.Toolbox.fetchWsapiRecords(config); });
+
+        Deft.Promise.all(promises).then({
+            success: function(results){
+                this.logger.log('_fetchUserStories', configs, results);
+                var userStories = _.flatten(results);
+                this._fetchTestCases(records, userStories);
+            },
+            failure: function(msg){
+                this._showError(msg);
+            },
+            scope: this
+        });
+    },
+    _fetchTestCases: function(features, userStories){
+        var configs = this._getTestCaseConfigs(userStories),
+            promises = _.map(configs, function(config) { return Rally.technicalservices.Toolbox.fetchWsapiRecords(config); });
+
+        Deft.Promise.all(promises).then({
+            success: function(results){
+                this.logger.log('_fetchTestCases', configs, results);
+               // var store = this._buildCustomStore(features, userStories, _.flatten(results));
+                //this._displayGrid(store);
+            },
+            failure: function(msg){
+                this._showError(msg);
+            },
+            scope: this
+        });
+    },
+    _buildCustomStore: function(portfolioItems, userStories, testCases){
+        this.logger.log('_buildCustomStore', portfolioItems, userStories, testCases);
+        var testCasesByPortfolioItem = this._getTestCasesByPortfolioItem(userStories, testCases);
+        this.logger.log('_buildCustomStore', testCasesByPortfolioItem);
+
+        var data = [];
+        _.each(portfolioItems, function(p){
+            var row = Ext.create('Rally.technicalservices.PortfolioTestStatusRow',{
+                portfolioItem: p,
+                testCases: testCasesByPortfolioItem[p.get('ObjectID')] || []
+            });
+            data.push(row.getDataRow());
+        });
+
+        var fields = _.keys(data[0]);
+        return Ext.create('Rally.data.custom.Store',{
+            data: data,
+            fields: fields
+        });
+    },
+    _getTestCasesByPortfolioItem: function(stories, testCases){
+
+        var testCasesByStory = _.reduce(testCases, function(sHash, tc){
+            var sid = tc.get('WorkProduct') && tc.get('WorkProduct').ObjectID || null;
+            if (sid){
+                if (!sHash[sid]){
+                    sHash[sid] = [];
+                }
+                sHash[sid].push(tc);
+            }
+            return sHash;
+        },{});
+
+        var h = {};
+        _.each(stories, function(s){
+            var feature = s.get('Feature') && s.get('Feature').ObjectID || null,
+                sid = s.get('ObjectID');
+            console.log('sid',feature,  sid);
+            if (feature && testCasesByStory[sid]){
+                if (!h[feature]){
+                    h[feature] = [];
+                }
+                h[feature] = h[feature].concat(testCasesByStory[sid]);
+                console.log('hash', feature, sid, s.get('TestCaseStatus'), testCasesByStory[sid], _.map(testCasesByStory[sid], function(tc){ return tc.get('FormattedID');}));
+            }
+        });
+
+        this.logger.log('_buildCustomStore', h);
+        return h;
+    },
+    _getPortfolioItemLevel: function(portfolioItem){
+        var idx = -1,
+            type = portfolioItem.get('_type').toLowerCase();
+
+        for (var i=0; i<this.portfolioItemTypes.length; i++){
+            if (type === this.portfolioItemTypes[i].TypePath.toLowerCase()){
+                idx = i;
+                i = this.portfolioItemTypes.length;
+            }
+        }
+        return idx;
+    },
+    _getFeatureConfig: function(portfolioItem){
+        var idx = this._getPortfolioItemLevel(portfolioItem);
+
+        var model = this.portfolioItemTypes[0].TypePath.toLowerCase(),
+            filterProperty = "ObjectID";
+        if (idx > 0) {
+            model = this.portfolioItemTypes[idx-1].TypePath.toLowerCase();
+            filterProperty = "Parent.ObjectID"
+        }
+
+        var filters = [{
+            property: filterProperty,
+            value: portfolioItem.get('ObjectID')
+        }],
+            commentsField = this.getSetting('commentsField'),
+            fetch = this.featureFetch.concat([commentsField]);
+
+        this.logger.log('_getFeatureConfig',fetch, model, idx, filterProperty, filters);
+        return {
+            //model: model,
+            autoLoad: true,
+            models: [model],
+            enableHierarchy: true,
+            fetch: fetch,
+            filters: filters,
+            //limit: 'Infinity'
+        };
+    },
+    _getFeatureFieldName: function(){
+        this.logger.log('_getFeatureFieldName',this.portfolioItemTypes[0].TypePath,this.portfolioItemTypes[0].TypePath.replace("PortfolioItem/",""));
+        return this.portfolioItemTypes[0].TypePath.replace("PortfolioItem/","");
+    },
+    _getStoryConfigs: function(portfolioItemRecords){
+        var idx = portfolioItemRecords.length > 0 ? this._getPortfolioItemLevel(portfolioItemRecords[0]) : 0,
+            featureName = this._getFeatureFieldName(),
+            fetch = ['ObjectID','TestCaseStatus'].concat([featureName]),
+            propertyFilter = [featureName];
+
+        for (var i=0; i<idx; i++){ propertyFilter.push('Parent'); }
+        propertyFilter.push('ObjectID');
+
+        var filters = _.map(portfolioItemRecords, function(r){ return {property: propertyFilter.join('.'), value: r.get('ObjectID')};});
+        if (portfolioItemRecords.length === 0){
+            filters = [{ property: 'ObjectID', value: 0}];
+        }
+
+        filters = Rally.data.wsapi.Filter.or(filters);
+
+        filters = filters.and({
+            property: 'TestCaseStatus',
+            operator: '!=',
+            value: ""
+        });
+
+        this.logger.log('_getStoryConfig', featureName, fetch, filters.toString());
+        return [{
+            model: 'HierarchicalRequirement',
+            fetch: fetch,
+            filters: filters,
+            limit: 'Infinity'
+        }];
+    },
+    _getTestCaseConfigs: function(storyRecords){
+        var fetch = this.testCaseFetch,
+            filters = _.map(storyRecords, function(r){ return {property: "WorkProduct.ObjectID", value: r.get('ObjectID')};});
+        this.logger.log('_getTestCaseConfigs', storyRecords, filters);
+        if (filters.length === 0){
+            filters = [{ property: 'ObjectID', value: 0}];
+        }
+        filters = Rally.data.wsapi.Filter.or(filters);
+
+        this.logger.log('_getTestCaseConfigs', fetch, filters.toString())
+
+        return [{
+            model: 'TestCase',
+            fetch: fetch,
+            filters: filters,
+            limit: 'Infinity'
+        }];
+    },
+    _displayGrid: function(store){
+        if (this.down('rallygrid')){
+            this.down('rallygrid').destroy();
+        }
+
+        this.add({
+            xtype: 'rallygrid',
+            store: store,
+            columnCfgs: this._getColumnCfgs()
+        });
+    },
+    _getColumnCfgs: function(){
+        var commentField = this.getSetting('commentsField')
+        this.logger.log('_getColumnCfgs', commentField);
+
+        return [{
+            dataIndex: 'Name',
+            text: 'Name',
+            flex: 1
+        //}, {
+        //    dataIndex: 'total',
+        //    text: 'Total'
+        //},{
+        //    dataIndex: 'actual',
+        //    text: 'Actual',
+        //    renderer: this._percentRenderer
+        //},{
+        //    dataIndex: 'plan',
+        //    text: 'Planned',
+        //    renderer: this._percentRenderer
+        //},{
+        //    dataIndex: 'passRate',
+        //    text: 'Passed',
+        //    renderer: this._percentRenderer
+        //},{
+        //    dataIndex: 'PlannedEndDate',
+        //    text: 'Planned End Date'
+        //},{
+        //    dataIndex: commentField,
+        //    text: 'Comments',
+        //    flex: 1
+        }];
+    },
+    _percentRenderer: function(v){
+        if (v !== null && !isNaN(v)){
+            return Math.round(v * 100) + '%';
+        }
+        return v || '';
+    },
+    getOptions: function() {
+        return [
+            {
+                text: 'About...',
+                handler: this._launchInfo,
+                scope: this
+            }
+        ];
+    },
+    _launchInfo: function() {
+        if ( this.about_dialog ) { this.about_dialog.destroy(); }
+        this.about_dialog = Ext.create('Rally.technicalservices.InfoLink',{});
+    },
+    
+    isExternal: function(){
+        return typeof(this.getAppId()) == 'undefined';
+    },
+    getSettingsFields: function(settings){
+
+        var filters = [{
+            property: 'TypePath',
+            operator: 'contains',
+            value: 'PortfolioItem/'
+        }];
+
+        return [{
+            name: 'selectPortfolioType',
+            xtype: 'rallycombobox',
+            allowBlank: false,
+            autoSelect: false,
+            shouldRespondToScopeChange: true,
+            fieldLabel: 'Portfolio Selector Type',
+            labelAlign: 'right',
+            labelWidth: 150,
+            context: this.getContext(),
+            storeConfig: {
+                model: Ext.identityFn('TypeDefinition'),
+                sorters: [{ property: 'DisplayName' }],
+                fetch: ['DisplayName', 'ElementName', 'TypePath', 'Parent', 'UserListable'],
+                filters: filters,
+                autoLoad: false,
+                remoteSort: false,
+                remoteFilter: true
+            },
+            displayField: 'DisplayName',
+            valueField: 'TypePath',
+            readyEvent: 'ready'
+        },{
+            name: 'commentsField',
+            xtype: 'rallyfieldcombobox',
+            labelAlign: 'right',
+            labelWidth: 150,
+            allowBlank: false,
+            fieldLabel: 'Field',
+            context: this.getContext(),
+            model: 'Portfolioitem'
+        }];
+    },
+    //onSettingsUpdate:  Override
+    onSettingsUpdate: function (settings){
+        this.logger.log('onSettingsUpdate',settings);
+        // Ext.apply(this, settings);
+        this._addSelector();
+    }
+});
+
+            
+               Rally.launchApp('test-status-by-portfolio-item', {
+                   name: 'Test Status by Portfolio Item'
+               });
+        });
+    </script>
+    
+    <style type="text/css">
+
+.app {
+}
+.tsinfolink {
+    position:absolute;
+    right:0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    text-align: center;
+    color: white;
+    background: #C0C0C0;
+    border-style: solid;
+    border-width: 1px;
+    margin-top: 25px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+    </style>
+
+</head>
+<body></body>
+</html>
