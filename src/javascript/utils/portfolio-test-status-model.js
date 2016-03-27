@@ -4,12 +4,15 @@ Ext.define('Rally.technicalservices.PortfolioTestStatusRow',{
         this.testCases = config.testCases;
     },
     getDataRow: function(){
+
+        console.log('getDataRow', this.testCases);
         return {
             drop: 'drop',
             subject: this.portfolioItem.get('Name'),
             actual: this._getActual(),
             plan: this._getPlan(),
             passRate: this._getPassRate(),
+            testCaseStatus: this._getStatus(),
             total: this.testCases.length,
             certificationDate: this.portfolioItem.get('PlannedEndDate'),
             comments: this._getComments(),
@@ -74,6 +77,48 @@ Ext.define('Rally.technicalservices.PortfolioTestStatusRow',{
             return passed/total;
         }
         return 0;
+    },
+    _getStatus: function(){
+        // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
+
+        var run = 0,
+            passed = 0,
+            total = 0;
+
+        _.each(this.testCases.length, function(tc){
+            if (tc.get('LastRun')){
+                run++;
+            }
+            if (tc.get('LastVerdict') === "Pass"){
+                passed++;
+            }
+            total++;
+        });
+
+        if (total === 0) {
+            return "NONE";
+        }
+        if (run === 0){
+            return "NONE_RUN";
+        }
+        if (passed > 0){
+            if (run === passed){
+                if (run === total){
+                    return "ALL_RUN_ALL_PASSING";
+                }
+                return "SOME_RUN_ALL_PASSING";
+            }
+            if (run === total){
+                //return "ALL_RUN_SOME_NOT_PASSING";
+            }
+            return "SOME_RUN_SOME_NOT_PASSING";
+        }
+
+        if (run === total){
+            return "ALL_RUN_NONE_PASSING";
+        }
+        //return "SOME_RUN_NONE_PASSING";
+        return "SOME_RUN_SOME_NOT_PASSING";
     },
     _getCertificationDate: function(){
         return 'certification Date';

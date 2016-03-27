@@ -3,10 +3,10 @@
 <head>
     <title>Test Status by Portfolio Item</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Wed Mar 16 2016 12:17:05 GMT-0400 (EDT) -->
+    <!--  Build Date: Sun Mar 27 2016 17:02:21 GMT-0600 (MDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Mar 16 2016 12:17:05 GMT-0400 (EDT)";
+        var APP_BUILD_DATE = "Sun Mar 27 2016 17:02:21 GMT-0600 (MDT)";
         var CHECKSUM = [%= checksum %];
     </script>
     

@@ -18,7 +18,7 @@ Ext.define("test-status-by-portfolio-item", {
         name : "test-status-by-portfolio-item"
     },
 
-    featureFetch: ['ObjectID','Name'], //['ObjectID','FormattedID','Name','PlannedStartDate','PlannedEndDate'],
+    featureFetch: ['ObjectID','FormattedID','Name','PlannedStartDate','PlannedEndDate','Parent'],
     testCaseFetch: ['ObjectID','FormattedID','WorkProduct','Type','LastVerdict','LastRun'],
 
     launch: function() {
@@ -60,7 +60,7 @@ Ext.define("test-status-by-portfolio-item", {
             featureConfig = this._getFeatureConfig(portfolioItem),
             me = this;
 
-        this.logger.log('_fetchGridboardData',featureConfig, portfolioItem);
+        this.logger.log('_fetchGridboardData',featureConfig, featureConfig.filters.toString(), portfolioItem);
 
         if (this.down('rallygridboard')){
             this.down('rallygridboard').destroy();
@@ -69,31 +69,43 @@ Ext.define("test-status-by-portfolio-item", {
         Ext.create('Rally.data.wsapi.TreeStoreBuilder').build({
             models: featureConfig.models,
             enableHierarchy: true,
-            autoLoad: true
+            autoLoad: true,
+            filters: featureConfig.filters
         }).then({
-            success: function (store) {
-                //store.on('load', this._fetchUserStories, this);
-                me.add({
-                    xtype: 'rallygridboard',
-                    context: this.getContext(),
-                    modelNames: featureConfig.models,
-                    toggleState: 'grid',
-                    stateful: false,
-                    stateId: this.getContext().getScopedStateId('grid-xyz'),
-                    gridConfig: {
-                        store: store,
-                        storeConfig: {
-                            filters: featureConfig.filters
-                        },
-                        columnCfgs: this._getColumnCfgs()
-                    },
-                    height: this.getHeight()
-                });
-            },
+            success: function(store) { this._addGridboard(store, featureConfig); },
             failure: function(msg){
                 me._showError(msg);
             },
             scope: me
+        });
+    },
+    _addGridboard: function (store, featureConfig) {
+
+        this.extendModel(store.model);
+        store.on('load', this._fetchUserStories, this);
+        this.logger.log('_addGridboard',featureConfig);
+        this.add({
+            xtype: 'rallygridboard',
+            modelNames: featureConfig.models,
+            //plugins: [{
+            //    ptype: 'rallygridboardfieldpicker',
+            //    headerPosition: 'right',
+            //    modelNames: featureConfig.models,
+            //    //stateful: true,
+            //    //stateId: 'test-status-columns'
+            //}],
+            toggleState: 'grid',
+            stateful: true,
+            stateId: 'test-status-gridboard-4',
+            gridConfig: {
+                store: store,
+                storeConfig: {
+                    filters: featureConfig.filters
+                },
+                columnCfgs: this._getColumnCfgs(),
+                derivedColumns: ['_totalTestCases']
+            },
+            height: this.getHeight()
         });
     },
     _fetchData: function(cb){
@@ -112,8 +124,16 @@ Ext.define("test-status-by-portfolio-item", {
         });
 
     },
-    _fetchUserStories: function(records){
-        this.logger.log('_fetchUserStories', records);
+    _fetchUserStories: function(store, node, records){
+        this.logger.log('_fetchUserStories', store, node, records);
+
+
+
+        if (node.parentNode){
+            //We only need to do this if we are loading the top level of stories.
+            return;
+        }
+
         var configs = this._getStoryConfigs(records),
             promises = _.map(configs, function(config) { return Rally.technicalservices.Toolbox.fetchWsapiRecords(config); });
 
@@ -136,6 +156,7 @@ Ext.define("test-status-by-portfolio-item", {
         Deft.Promise.all(promises).then({
             success: function(results){
                 this.logger.log('_fetchTestCases', configs, results);
+                this._processCalculatedFields(features, userStories, _.flatten(results));
                // var store = this._buildCustomStore(features, userStories, _.flatten(results));
                 //this._displayGrid(store);
             },
@@ -143,6 +164,23 @@ Ext.define("test-status-by-portfolio-item", {
                 this._showError(msg);
             },
             scope: this
+        });
+    },
+    _processCalculatedFields: function(portfolioItems, userStories, testCases){
+        this.logger.log('_processCalculatedFields', portfolioItems, userStories, testCases);
+        var testCasesByPortfolioItem = this._getTestCasesByPortfolioItem(userStories, testCases);
+        this.logger.log('_processCalculatedFields', testCasesByPortfolioItem);
+
+        var data = [];
+        _.each(portfolioItems, function(p){
+            console.log('p',p,testCasesByPortfolioItem[p.get('ObjectID')]);
+            this.calculate(p, testCasesByPortfolioItem[p.get('ObjectID')] || [])
+        }, this);
+
+        var fields = _.keys(data[0]);
+        return Ext.create('Rally.data.custom.Store',{
+            data: data,
+            fields: fields
         });
     },
     _buildCustomStore: function(portfolioItems, userStories, testCases){
@@ -184,10 +222,15 @@ Ext.define("test-status-by-portfolio-item", {
                 sid = s.get('ObjectID');
             console.log('sid',feature,  sid);
             if (feature && testCasesByStory[sid]){
+                var featureParent = s.get('Feature') && s.get('Feature').Parent && s.get('Feature').Parent.ObjectID;
                 if (!h[feature]){
                     h[feature] = [];
                 }
+                if (featureParent && !h[featureParent]){
+                    h[featureParent] = [];
+                }
                 h[feature] = h[feature].concat(testCasesByStory[sid]);
+                if (featureParent) { h[featureParent] = h[featureParent].concat(testCasesByStory[sid]); }
                 console.log('hash', feature, sid, s.get('TestCaseStatus'), testCasesByStory[sid], _.map(testCasesByStory[sid], function(tc){ return tc.get('FormattedID');}));
             }
         });
@@ -217,22 +260,21 @@ Ext.define("test-status-by-portfolio-item", {
             filterProperty = "Parent.ObjectID"
         }
 
-        var filters = [{
+        var filters = Ext.create('Rally.data.wsapi.Filter',{
             property: filterProperty,
             value: portfolioItem.get('ObjectID')
-        }],
+        }),
             commentsField = this.getSetting('commentsField'),
             fetch = this.featureFetch.concat([commentsField]);
 
         this.logger.log('_getFeatureConfig',fetch, model, idx, filterProperty, filters);
         return {
-            //model: model,
             autoLoad: true,
             models: [model],
             enableHierarchy: true,
             fetch: fetch,
             filters: filters,
-            //limit: 'Infinity'
+            limit: 'Infinity'
         };
     },
     _getFeatureFieldName: function(){
@@ -240,15 +282,17 @@ Ext.define("test-status-by-portfolio-item", {
         return this.portfolioItemTypes[0].TypePath.replace("PortfolioItem/","");
     },
     _getStoryConfigs: function(portfolioItemRecords){
+        this.logger.log('_getStoryConfigs', portfolioItemRecords);
         var idx = portfolioItemRecords.length > 0 ? this._getPortfolioItemLevel(portfolioItemRecords[0]) : 0,
             featureName = this._getFeatureFieldName(),
-            fetch = ['ObjectID','TestCaseStatus'].concat([featureName]),
+            fetch = ['ObjectID','TestCaseStatus','Parent'].concat([featureName]),
             propertyFilter = [featureName];
 
         for (var i=0; i<idx; i++){ propertyFilter.push('Parent'); }
         propertyFilter.push('ObjectID');
+        propertyFilter = propertyFilter.join('.');
 
-        var filters = _.map(portfolioItemRecords, function(r){ return {property: propertyFilter.join('.'), value: r.get('ObjectID')};});
+        var filters = _.map(portfolioItemRecords, function(r){ return {property: propertyFilter, value: r.get('ObjectID')};});
         if (portfolioItemRecords.length === 0){
             filters = [{ property: 'ObjectID', value: 0}];
         }
@@ -298,6 +342,19 @@ Ext.define("test-status-by-portfolio-item", {
             columnCfgs: this._getColumnCfgs()
         });
     },
+    _addFieldsToModel: function(model){
+
+        //model.addField({name: '_totalTestCases', defaultValue: '---' });
+        //model.addField({name: '_actualTestCases', defaultValue: '---' });
+        //model.addField({name: '_plannedTestCases', defaultValue: '---' });
+        //model.addField({name: '_passRate', defaultValue: '---' });
+        //model.addField({name: '_testCaseStatus', defaultValue: '---' });
+        //model.addMembers({
+        //    calculate: function(testCases){
+        //
+        //    }
+        //});
+    },
     _getColumnCfgs: function(){
         var commentField = this.getSetting('commentsField')
         this.logger.log('_getColumnCfgs', commentField);
@@ -306,31 +363,38 @@ Ext.define("test-status-by-portfolio-item", {
             dataIndex: 'Name',
             text: 'Name',
             flex: 1
-        //}, {
-        //    dataIndex: 'total',
-        //    text: 'Total'
-        //},{
-        //    dataIndex: 'actual',
-        //    text: 'Actual',
-        //    renderer: this._percentRenderer
-        //},{
-        //    dataIndex: 'plan',
-        //    text: 'Planned',
-        //    renderer: this._percentRenderer
-        //},{
-        //    dataIndex: 'passRate',
-        //    text: 'Passed',
-        //    renderer: this._percentRenderer
-        //},{
-        //    dataIndex: 'PlannedEndDate',
-        //    text: 'Planned End Date'
-        //},{
-        //    dataIndex: commentField,
-        //    text: 'Comments',
-        //    flex: 1
+        }, {
+            dataIndex: '_totalTestCases',
+            text: 'Total',
+            renderer: function(v,m,r){
+                return r.get('_totalTestCases');
+            }
+        },{
+            dataIndex: '_actualTestCases',
+            text: 'Actual',
+            renderer: this._percentRenderer
+        },{
+            dataIndex: '_plannedTestCases',
+            text: 'Planned',
+            renderer: this._percentRenderer
+        },{
+            dataIndex: '_passRate',
+            text: 'Passed',
+            renderer: this._percentRenderer
+        }, {
+            dataIndex: '_testCaseStatus',
+            text: 'Status',
+        },{
+            dataIndex: 'PlannedEndDate',
+            text: 'Planned End Date'
+        },{
+            dataIndex: commentField,
+            text: 'Comments',
+            flex: 1
         }];
     },
     _percentRenderer: function(v){
+        return 199;
         if (v !== null && !isNaN(v)){
             return Math.round(v * 100) + '%';
         }
@@ -397,7 +461,252 @@ Ext.define("test-status-by-portfolio-item", {
     //onSettingsUpdate:  Override
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
-        // Ext.apply(this, settings);
         this._addSelector();
+    },
+    extendModel: function(model) {
+        console.log('extend', model);
+
+        var default_fields = [{
+            name: '_totalTestCases',
+            defaultValue: null,
+            displayName: 'Total'
+        },{
+            name: '_actualTestCases',
+            displayName: 'Actual',
+            defaultValue: null
+        },{
+            name: '_plannedTestCases',
+            displayName: 'Planned',
+            defaultValue: null
+        },{
+            name: '_passRate',
+            displayName: 'Passed',
+            defaultValue: null
+        }, {
+            name: '_testCaseStatus',
+            displayName: 'Status',
+            defaultValue: null
+        }];
+
+        _.each(default_fields, function(df){
+            model.addField(df);
+        });
+        model.addMembers({
+            calculate: function(testCases) {
+                this.logger.log('calculate', this.get('Name'));
+                this.set('_totalTestCases', testCases.length);
+                this.set('_actualTestCases', this._getActual(testCases));
+                this.set('_plannedTestCases', this._getPlan(testCases));
+                this.set('_passRate', this._getPassRate(testCases));
+                this.set('_testCaseStatus', this._getStatus(testCases));
+            },
+            _getActual: function(testCases){
+                if (testCases.length > 0){
+                    return this._getTestCasesRun(testCases)/testCases.length;
+                }
+                return 0;
+            },
+            _getPlan: function(testCases){
+                var today = new Date(),
+                    startDate = this.get('PlannedStartDate') || this.get('ActualStartDate') || null,
+                    endDate = this.get('PlannedEndDate') || this.get('ActualEndDate') || null;
+
+                if (startDate && endDate){
+                    if (endDate < startDate){
+                        var tmp = endDate;
+                        endDate = startDate;
+                        startDate = tmp;
+                    }
+
+                    var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
+                        currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
+
+                    if (today >= startDate && today <= endDate){
+                        return totalRange > 0 ? currentRange/totalRange : 0;
+                    }
+
+                    if (today > endDate){
+                        return 1;
+                    }
+                    //if none of the above, then today is < start date and planned = 0
+                }
+                return 0;
+            },
+            _getTestCasesRun: function(testCases){
+                var run = 0;
+                _.each(testCases, function(tc){
+                    if (tc.get('LastRun')){
+                        run++;
+                    }
+                });
+                return run;
+            },
+            _getPassRate: function(testCases){
+                var passed = 0,
+                    passVerdicts = ['Pass'],
+                    total = testCases.length;
+
+                _.each(testCases, function(tc){
+                    if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
+                        passed++;
+                    }
+                });
+
+                if (total > 0){
+                    return passed/total;
+                }
+                return 0;
+            },
+            _getStatus: function(testCases){
+                // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
+
+                var run = 0,
+                    passed = 0,
+                    total = 0;
+
+                _.each(testCases.length, function(tc){
+                    if (tc.get('LastRun')){
+                        run++;
+                    }
+                    if (tc.get('LastVerdict') === "Pass"){
+                        passed++;
+                    }
+                    total++;
+                });
+
+                if (total === 0) {
+                    return "NONE";
+                }
+                if (run === 0){
+                    return "NONE_RUN";
+                }
+                if (passed > 0){
+                    if (run === passed){
+                        if (run === total){
+                            return "ALL_RUN_ALL_PASSING";
+                        }
+                        return "SOME_RUN_ALL_PASSING";
+                    }
+                    if (run === total){
+                        //return "ALL_RUN_SOME_NOT_PASSING";
+                    }
+                    return "SOME_RUN_SOME_NOT_PASSING";
+                }
+
+                if (run === total){
+                    return "ALL_RUN_NONE_PASSING";
+                }
+                //return "SOME_RUN_NONE_PASSING";
+                return "SOME_RUN_SOME_NOT_PASSING";
+            }
+        });
+    },
+    calculate: function(portfolioItem, testCases) {
+        this.logger.log('calculate', portfolioItem.get('Name'));
+        portfolioItem.set('_totalTestCases', testCases.length);
+        portfolioItem.set('_actualTestCases', this._getActual(testCases));
+        portfolioItem.set('_plannedTestCases', this._getPlan(portfolioItem, testCases));
+        portfolioItem.set('_passRate', this._getPassRate(testCases));
+        portfolioItem.set('_testCaseStatus', this._getStatus(testCases));
+    },
+    _getActual: function(testCases){
+        if (testCases.length > 0){
+            return this._getTestCasesRun(testCases)/testCases.length;
+        }
+        return 0;
+    },
+    _getPlan: function(portfolioItem, testCases){
+        var today = new Date(),
+            startDate = portfolioItem.get('PlannedStartDate') || portfolioItem.get('ActualStartDate') || null,
+            endDate = portfolioItem.get('PlannedEndDate') || portfolioItem.get('ActualEndDate') || null;
+
+        if (startDate && endDate){
+            if (endDate < startDate){
+                var tmp = endDate;
+                endDate = startDate;
+                startDate = tmp;
+            }
+
+            var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
+                currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
+
+            if (today >= startDate && today <= endDate){
+                return totalRange > 0 ? currentRange/totalRange : 0;
+            }
+
+            if (today > endDate){
+                return 1;
+            }
+            //if none of the above, then today is < start date and planned = 0
+        }
+        return 0;
+    },
+    _getTestCasesRun: function(testCases){
+        var run = 0;
+        _.each(testCases, function(tc){
+            if (tc.get('LastRun')){
+                run++;
+            }
+        });
+        return run;
+    },
+    _getPassRate: function(testCases){
+        var passed = 0,
+            passVerdicts = ['Pass'],
+            total = testCases.length;
+
+        _.each(testCases, function(tc){
+            if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
+                passed++;
+            }
+        });
+
+        if (total > 0){
+            return passed/total;
+        }
+        return 0;
+    },
+    _getStatus: function(testCases){
+        // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
+
+        var run = 0,
+            passed = 0,
+            total = 0;
+
+        _.each(testCases.length, function(tc){
+            if (tc.get('LastRun')){
+                run++;
+            }
+            if (tc.get('LastVerdict') === "Pass"){
+                passed++;
+            }
+            total++;
+        });
+
+        if (total === 0) {
+            return "NONE";
+        }
+        if (run === 0){
+            return "NONE_RUN";
+        }
+        if (passed > 0){
+            if (run === passed){
+                if (run === total){
+                    return "ALL_RUN_ALL_PASSING";
+                }
+                return "SOME_RUN_ALL_PASSING";
+            }
+            if (run === total){
+                //return "ALL_RUN_SOME_NOT_PASSING";
+            }
+            return "SOME_RUN_SOME_NOT_PASSING";
+        }
+
+        if (run === total){
+            return "ALL_RUN_NONE_PASSING";
+        }
+        //return "SOME_RUN_NONE_PASSING";
+        return "SOME_RUN_SOME_NOT_PASSING";
     }
+
 });
