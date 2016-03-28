@@ -3,11 +3,11 @@
 <head>
     <title>Test Status by Portfolio Item</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Mar 27 2016 17:02:20 GMT-0600 (MDT) -->
+    <!--  Build Date: Sun Mar 27 2016 23:19:40 GMT-0600 (MDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Mar 27 2016 17:02:20 GMT-0600 (MDT)";
-        var CHECKSUM = 120023398179;
+        var APP_BUILD_DATE = "Sun Mar 27 2016 23:19:40 GMT-0600 (MDT)";
+        var CHECKSUM = 25623075936;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -176,1241 +176,369 @@ Ext.define('Rally.technicalservices.Logger',{
 
 });
 
-//Ext.define('Rally.technicalservices.ModelExtender',{
-//    singleton: true,
-//
-//    extend: function(model) {
-//        var default_fields = [{
-//            name: '_totalTestCases',
-//            defaultValue: null,
-//            displayName: 'Total'
-//        },{
-//            name: '_actualTestCases',
-//            displayName: 'Actual',
-//            defaultValue: null
-//        },{
-//            name: '_plannedTestCases',
-//            displayName: 'Planned',
-//            defaultValue: null
-//        },{
-//            name: '_passRate',
-//            displayName: 'Passed',
-//            defaultValue: null
-//        }, {
-//            name: '_testCaseStatus',
-//            displayName: 'Status',
-//            defaultValue: null
-//        }];
-//
-//        _.each(default_fields, function(df){
-//            model.addField(df);
-//        });
-//        model.addMembers({
-//            calculate: function(testCases) {
-//                this.logger.log('calculate', this.get('Name'));
-//                this.set('_totalTestCases', testCases.length);
-//                this.set('_actualTestCases', this._getActual(testCases));
-//                this.set('_plannedTestCases', this._getPlan(testCases));
-//                this.set('_passRate', this._getPassRate(testCases));
-//                this.set('_testCaseStatus', this._getStatus(testCases));
-//            },
-//            _getActual: function(testCases){
-//                if (testCases.length > 0){
-//                    return this._getTestCasesRun(testCases)/testCases.length;
-//                }
-//                return 0;
-//            },
-//            _getPlan: function(testCases){
-//                var today = new Date(),
-//                    startDate = this.get('PlannedStartDate') || this.get('ActualStartDate') || null,
-//                    endDate = this.get('PlannedEndDate') || this.get('ActualEndDate') || null;
-//
-//                if (startDate && endDate){
-//                    if (endDate < startDate){
-//                        var tmp = endDate;
-//                        endDate = startDate;
-//                        startDate = tmp;
-//                    }
-//
-//                    var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
-//                        currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
-//
-//                    if (today >= startDate && today <= endDate){
-//                        return totalRange > 0 ? currentRange/totalRange : 0;
-//                    }
-//
-//                    if (today > endDate){
-//                        return 1;
-//                    }
-//                    //if none of the above, then today is < start date and planned = 0
-//                }
-//                return 0;
-//            },
-//            _getTestCasesRun: function(testCases){
-//                var run = 0;
-//                _.each(testCases, function(tc){
-//                    if (tc.get('LastRun')){
-//                        run++;
-//                    }
-//                });
-//                return run;
-//            },
-//            _getPassRate: function(testCases){
-//                var passed = 0,
-//                    passVerdicts = ['Pass'],
-//                    total = testCases.length;
-//
-//                _.each(testCases, function(tc){
-//                    if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
-//                        passed++;
-//                    }
-//                });
-//
-//                if (total > 0){
-//                    return passed/total;
-//                }
-//                return 0;
-//            },
-//            _getStatus: function(testCases){
-//                // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
-//
-//                var run = 0,
-//                    passed = 0,
-//                    total = 0;
-//
-//                _.each(testCases.length, function(tc){
-//                    if (tc.get('LastRun')){
-//                        run++;
-//                    }
-//                    if (tc.get('LastVerdict') === "Pass"){
-//                        passed++;
-//                    }
-//                    total++;
-//                });
-//
-//                if (total === 0) {
-//                    return "NONE";
-//                }
-//                if (run === 0){
-//                    return "NONE_RUN";
-//                }
-//                if (passed > 0){
-//                    if (run === passed){
-//                        if (run === total){
-//                            return "ALL_RUN_ALL_PASSING";
-//                        }
-//                        return "SOME_RUN_ALL_PASSING";
-//                    }
-//                    if (run === total){
-//                        //return "ALL_RUN_SOME_NOT_PASSING";
-//                    }
-//                    return "SOME_RUN_SOME_NOT_PASSING";
-//                }
-//
-//                if (run === total){
-//                    return "ALL_RUN_NONE_PASSING";
-//                }
-//                //return "SOME_RUN_NONE_PASSING";
-//                return "SOME_RUN_SOME_NOT_PASSING";
-//            }
-//        });
-//    }
-//});
-    //
-    //Ext.override(Rally.ui.grid.TreeGrid, {
-    //
-    //
-    //    constructor: function(config) {
-    //        this.mergeConfig(config);
-    //
-    //        this.treeColumnRenderer = this.treeColumnRenderer || this._defaultTreeColumnRenderer;
-    //        this.plugins = this._setupPlugins(config);
-    //        this.features = this._setupFeatures(config);
-    //
-    //        this.callParent(arguments);
-    //    },
-    //
-    //    initComponent: function() {
-    //        if (!this.store) {
-    //            Ext.Error.raise('A store must be specified in the config');
-    //        }
-    //
-    //        if (!this.expandTracker) {
-    //            this.expandTracker = Ext.create('Rally.ui.grid.TreeGridExpandTracker');
-    //        }
-    //
-    //        if (!this.variableRowHeight) {
-    //            this.addCls('rally-grid-cell-no-wrap');
-    //        }
-    //
-    //        this.addEvents([
-    //        /**
-    //         * @event filterchange
-    //         * Fires when the grid's filter is changed.
-    //         * @param {Ext.util.Filter} filter
-    //         * @param Boolean clearFilter - true if existing filters should be cleared before applying new filter
-    //         * @param {Boolean} ignoreDefaultFilters True if filters passed in at initialization time should be removed when clearing other filters
-    //         */
-    //            'filterchange',
-    //        /**
-    //         * @event
-    //         * Fires when user wants all items expanded
-    //         * @param {Ext.Component} this
-    //         */
-    //            'expandall',
-    //        /**
-    //         * @event
-    //         * Fires when user wants all item collapsed
-    //         * @param {Ext.Component} this
-    //         */
-    //            'collapseall',
-    //        /**
-    //         * @event
-    //         * Fires when all items are expanded and after all childern are loaded and rendered
-    //         * @param {Ext.Component} this
-    //         * @param {Array} expanded nodes
-    //         */
-    //            'afterexpandbatch',
-    //        /**
-    //         * @event
-    //         * Fires when all items are collapsed and after all childern are rendered
-    //         * @param {Ext.Component} this
-    //         * @param {Array} collapsed nodes
-    //         */
-    //            'aftercollapsebatch',
-    //        /**
-    //         * @event
-    //         * Fires after a new child has been added to a parent and rendered.
-    //         *
-    //         * @param {Ext.Component} this
-    //         * @param {Ext.data.Mode} parentNode
-    //         * @param {Ext.data.Mode} childNode
-    //         */
-    //            'afterchildadd'
-    //        ]);
-    //
-    //        this.store.requester = this.store.requester || this;
-    //        this.store.clientMetricsParent = this;
-    //
-    //        if (this.enableBulkEdit) {
-    //            this.selType = 'rallycheckboxmodel';
-    //            this.selModel = {
-    //                injectCheckbox: this.enableRanking ? 1 : 0
-    //            };
-    //        }
-    //
-    //        this._applyInitialState();
-    //        this._buildDockedItems();
-    //        this._buildColumns();
-    //        this._applySorters();
-    //        this._applyFetch();
-    //        this._initView();
-    //        console.log('--', this.columns);
-    //        this.callParent(arguments);
-    //
-    //        this.subscribe(Rally.Message.bulkImport, function() {
-    //            this.refresh({
-    //                callback: function(records, operation, success) {
-    //                    this.store.sort();
-    //                },
-    //                scope: this
-    //            });
-    //        }, this);
-    //    },
-    //
-    //    _defaultTreeColumnRenderer: function (value, metaData, record, rowIdx, colIdx, store) {
-    //        store = store.treeStore || store;
-    //        console.log('_defaultTreeColumnRenderer', value, colIdx)
-    //        return Rally.ui.renderer.RendererFactory.getRenderTemplate(store.model.getField('FormattedID')).apply(record.data);
-    //    },
-    //
-    //    _applySorters: function() {
-    //        var store = this.store,
-    //            sorterConfig,
-    //            rankField;
-    //
-    //        if (store.sorters.getCount() > 0) {
-    //            return; // use configured sorters
-    //        }
-    //
-    //        if (Rally.data.Ranker.isRankable(store.model)) {
-    //            rankField = Rally.data.Ranker.getRankField(store.model);
-    //            sorterConfig = Rally.data.util.Sorter.sorters(rankField + ' ASC').pop();
-    //        } else {
-    //            sorterConfig = Rally.data.util.Sorter.getDefaultSort(store.model.typePath, {asSorter: true}).pop();
-    //        }
-    //
-    //        store.sorters.add(Ext.create('Ext.util.Sorter', sorterConfig));
-    //    },
-    //
-    //    _applyFetch: function() {
-    //        this.store.fetch = this._buildFetch();
-    //
-    //        if (this._shouldShowSummary()) {
-    //            this.store.summaryFields = _.pluck(this.summaryColumns, 'field');
-    //        }
-    //    },
-    //
-    //    _addStoreListeners: function() {
-    //        this.relayEvents(this.store, [
-    //            'load',
-    //            'beforeexpand',
-    //            'beforecollapse',
-    //            'beforeload',
-    //            'expand',
-    //            'collapse',
-    //            'currentpagereset',
-    //            'datachanged',
-    //            'excludebyfilter',
-    //            'movetopage',
-    //            'beforefilter',
-    //            'afterbuscreate',
-    //            'afterbusupdate',
-    //            'afterbusremove'
-    //        ], 'store');
-    //        this.on('storeload', this._onStoreLoad, this);
-    //        this.on('storedatachanged', this._onDataChanged, this);
-    //        this.on('storeexcludebyfilter', this._onExcludeByFilter, this);
-    //        this.on('storemovetopage', this._onMoveToPage, this);
-    //        this._initStateEvents();
-    //    },
-    //
-    //    _initPager: function() {
-    //        var pager = this.down('#pagingToolbar');
-    //
-    //        this.relayEvents(pager, ['change', 'beforechange'], 'pagingtoolbar');
-    //
-    //        this._addPageResetListeners();
-    //    },
-    //
-    //    _initView: function() {
-    //        if (!this.rendered) {
-    //            this.on('afterrender', this._initView, this, {single: true});
-    //            return;
-    //        }
-    //
-    //        this._addStoreListeners();
-    //        this._initPager();
-    //        this._fireComponentReady();
-    //    },
-    //
-    //    _initStateEvents: function() {
-    //        this.on('storeload', function() {
-    //            this.readyForStateEvents = true;
-    //            this.addStateEvents(['columnresize', 'columnmove', 'sortchange', 'reconfigure', 'pagingtoolbarchange']);
-    //            this.recordComponentReady();
-    //        }, this, {
-    //            single: true,
-    //            buffer: 100
-    //        });
-    //    },
-    //
-    //    _applyInitialState: function() {
-    //        var id = this.getStateId() || '',
-    //            state = this.appliedState || Ext.state.Manager.getProvider().get(id) || {};
-    //
-    //        this.applyState(state);
-    //    },
-    //
-    //    _fireComponentReady: function() {
-    //        if (Rally.BrowserTest) {
-    //            Rally.BrowserTest.publishComponentReady(this);
-    //            this.publish(Rally.Message.treeLoaded);
-    //        }
-    //    },
-    //
-    //    destroy: function() {
-    //        this._removePageResetListeners();
-    //        this.callParent(arguments);
-    //    },
-    //
-    //    refresh: function(options) {
-    //        return this.store.load(_.assign({
-    //            node: this.getRootNode(),
-    //            clearOnLoad: false
-    //        }, options));
-    //    },
-    //
-    //    refreshAfterBulkAction: function() {
-    //        return Deft.Promise.when(true);
-    //    },
-    //
-    //    _addPageResetListeners: function() {
-    //        this.on('storecurrentpagereset', this._resetCurrentPage, this);
-    //
-    //    },
-    //
-    //    _removePageResetListeners: function() {
-    //        this.un('storecurrentpagereset', this._resetCurrentPage, this);
-    //    },
-    //
-    //    _getColumnCfgs: function() {
-    //        return this.columnCfgs;
-    //    },
-    //
-    //    _isStatefulColumn: function(columnName) {
-    //        columnName = columnName.toLowerCase();
-    //
-    //        if (this.store.enableHierarchy && columnName === this.treeColumnDataIndex.toLowerCase()) {
-    //            return false;
-    //        }
-    //
-    //        if (this.enableRanking && columnName === this.rankColumnDataIndex.toLowerCase()) {
-    //            return false;
-    //        }
-    //
-    //        return true;
-    //    },
-    //
-    //    _getStatefulColumns: function(columnCfgs) {
-    //        return _.filter(columnCfgs, function(columnCfg) {
-    //            var columnName = Ext.isString(columnCfg) ? columnCfg: columnCfg.dataIndex;
-    //            return !Ext.isEmpty(columnName) && this._isStatefulColumn(columnName);
-    //        }, this);
-    //    },
-    //
-    //    addStateEvents: function() {
-    //        // overridden to ignore state events set before initial load
-    //        if (this.readyForStateEvents) {
-    //            this.callParent(arguments);
-    //        }
-    //    },
-    //
-    //    applyState: function(state) {
-    //        this.appliedState = state;
-    //        this._applyState(state);
-    //    },
-    //
-    //    _applyState: function(state) {
-    //        if (state.columns) {
-    //            // make sure flex is set correctly for column configs saved in a preference
-    //            _.each(state.columns, this._setColumnFlex, this);
-    //            if (this.enableRanking) {
-    //                state.columns = this._removeExistingRankColumn(state.columns);
-    //            }
-    //
-    //            this._applyStatefulColumns(state.columns);
-    //        }
-    //
-    //        if (state.pagingToolbar) {
-    //            var store = this.getStore();
-    //            store.pageSize = state.pagingToolbar.pageSize;
-    //            store.currentPage = state.pagingToolbar.currentPage;
-    //        }
-    //
-    //        if (state.sorters) {
-    //            var sorters = _.transform(state.sorters, function (collection, sorterState) {
-    //                if(Rally.data.Ranker.isRankField(sorterState.property)) {
-    //                    sorterState.property = Rally.data.Ranker.getRankField(this.store.model);
-    //                }
-    //
-    //                collection.add(Ext.create('Ext.util.Sorter', {
-    //                    property: sorterState.property,
-    //                    direction: sorterState.direction
-    //                }));
-    //            }, Ext.create('Ext.util.MixedCollection'), this);
-    //            this.getStore().sorters = sorters;
-    //        }
-    //
-    //        if (state.expandedRowPersistence) {
-    //            this.expandedRowPersistenceState = state.expandedRowPersistence;
-    //        }
-    //
-    //        this.fireEvent('staterestore', this, state);
-    //    },
-    //
-    //    _applyStatefulColumns: function(columns) {
-    //        if (this.alwaysShowDefaultColumns) {
-    //            _.each(this.columnCfgs, function(columnCfg) {
-    //                var dataIndex = _.has(columnCfg.dataIndex) ? columnCfg.dataIndex : columnCfg;
-    //                if (!_.any(columns, {dataIndex: dataIndex})) {
-    //                    columns.push(columnCfg);
-    //                }
-    //            });
-    //        }
-    //
-    //        this.columnCfgs = columns;
-    //    },
-    //
-    //    _removeExistingRankColumn: function(columns) {
-    //        return _.filter(columns, function(col) {
-    //            return col.dataIndex !== this.rankColumnDataIndex;
-    //        }, this);
-    //    },
-    //
-    //    getState: function() {
-    //        var state = {},
-    //            statefulColumns = this._getStatefulColumns(this.headerCt.getGridColumns());
-    //
-    //        state.columns = _.map(statefulColumns, this._getColumnConfigFromColumn, this);
-    //
-    //        state.pagingToolbar = {
-    //            pageSize: this.getStore().pageSize,
-    //            currentPage: this.getStore().currentPage
-    //        };
-    //
-    //        state.sorters = _.map(this.getStore().sorters.getRange(), function(sorter) {
-    //            return {
-    //                property: sorter.property,  //Why does this differ from what is in _initSorters()?
-    //                direction: sorter.direction
-    //            };
-    //        });
-    //
-    //        state.expandedRowPersistence = this.expandedRowPersistenceState;
-    //
-    //        return state;
-    //    },
-    //
-    //    // Buffer method to avoid spewing preference updates when state is updated multiple times within a short time period.
-    //    saveState: Ext.Function.createBuffered(function () {
-    //        if (!this.isDestroyed) {
-    //            Ext.state.Stateful.prototype.saveState.apply(this, arguments);
-    //        }
-    //    }, 100),
-    //
-    //    /**
-    //     * Reconfigure the columns to be displayed in the grid.
-    //     * @param {Boolean} true to override existing column config with new column config already exists
-    //     * @param {Boolean} true to suspend store load if it will be triggered elsewhere
-    //     */
-    //    reconfigureWithColumns: function(columnCfgs, reconfigureExistingColumns, suspendLoad) {
-    //        columnCfgs = this._getStatefulColumns(columnCfgs);
-    //
-    //        if (!reconfigureExistingColumns) {
-    //            columnCfgs = this._mergeColumnConfigs(columnCfgs, this.columns);
-    //        }
-    //
-    //        this.columnCfgs = columnCfgs;
-    //        this._buildColumns(true);
-    //        this.getStore().fetch = this._buildFetch();
-    //
-    //
-    //        this.on('reconfigure', function() {
-    //            this.headerCt.setSortState();
-    //        }, this, {single: true});
-    //        this.reconfigure(null, this.columns);
-    //        this.columns = this.headerCt.items.getRange();
-    //
-    //        if (!suspendLoad) {
-    //            console.log('loadstore');
-    //            this.getStore().load();
-    //        }
-    //    },
-    //
-    //    _getColumnConfigFromColumn: function(column) {
-    //        var config = {
-    //            xtype: column.xtype,
-    //            dataIndex: column.dataIndex,
-    //            text: column.text,
-    //            sortable: column.sortable,
-    //            width: Ext.isFunction(column.getWidth) ? column.getWidth() : column.width
-    //        };
-    //        console.log('_getcolumnconfigfromcolumn', column);
-    //        this._setColumnFlex(config);
-    //
-    //        return config;
-    //    },
-    //
-    //    _setColumnFlex: function(column) {
-    //        if (column.width) {
-    //            column.flex = column.width;
-    //            delete column.width;
-    //        } else if (!_.isNumber(column.flex)) {
-    //            column.flex = Rally.ui.grid.FieldColumnFactory.defaultFlexValue;
-    //        }
-    //    },
-    //
-    //    _getDataIndex: function(column) {
-    //        return column.dataIndex ? column.dataIndex : column;
-    //    },
-    //
-    //    _mergeColumnConfigs: function(newColumns, oldColumns) {
-    //
-    //        console.log('mergecolumn', newColumns, oldColumns);
-    //        return _.map(newColumns, function(newColumn) {
-    //            var oldColumn = _.find(oldColumns, {dataIndex: this._getDataIndex(newColumn)});
-    //            if (oldColumn) {
-    //                return this._getColumnConfigFromColumn(oldColumn);
-    //            }
-    //
-    //            return newColumn;
-    //        }, this);
-    //    },
-    //
-    //    _getExpandColumnCfg: function() {
-    //        var xtype = this.expandAllInColumnHeaderEnabled ? 'rallyformattedidtreecolumn' : 'treecolumn';
-    //
-    //        return {
-    //            xtype: xtype,
-    //            text: this.treeColumnHeader,
-    //            dataIndex: this.treeColumnDataIndex,
-    //            draggable: false,
-    //            resizable: this.treeColumnResizable,
-    //            renderer: this.treeColumnRenderer,
-    //            scope: this,
-    //            menuDisabled: this.disableColumnMenus,
-    //            listeners: {
-    //                beforerender: function(column) {
-    //                    if (!column.initialConfig.renderer) {
-    //                        column.origRenderer = Rally.ui.grid.CellRendererFactory.createRendererFunction(column);
-    //                    }
-    //                }
-    //            }
-    //        };
-    //    },
-    //
-    //    _buildColumns: function(isReconfiguring) {
-    //        var model = this.getStore().model;
-    //        var disabledEditorColumns = ['DisplayColor'].concat(this.enableBlockedReasonPopover ? ['Blocked'] : []);
-    //        var columnCfgs = Ext.clone(this._getColumnCfgs());
-    //
-    //        if (!this.enableRanking) {
-    //            this.rowActionColumnConfig = _.merge({
-    //                menuOptions: {
-    //                    showRankMenuItems: false
-    //                }
-    //            }, this.rowActionColumnConfig);
-    //        }
-    //
-    //        var rowActionOptions = this.shouldShowRowActionsColumn && this.rowActionColumnConfig ? this.rowActionColumnConfig : this.shouldShowRowActionsColumn;
-    //
-    //        if (this.store.enableHierarchy) {
-    //            columnCfgs.unshift(this._getExpandColumnCfg());
-    //        }
-    //
-    //        console.log('_buildColumns', columnCfgs, this.sortableColumns,this.autoAddAllModelFieldsAsColumns);
-    //        this.columns = Ext.create('Rally.ui.grid.ColumnBuilder').
-    //        withDefaultColumns(columnCfgs).
-    //        withSortableColumns(this.sortableColumns).
-    //        shouldAutoAddAllModelFieldsAsColumns(this.autoAddAllModelFieldsAsColumns).
-    //        withDisableColumnMenus(this.disableColumnMenus).
-    //        withEditorsDisabledForColumns(disabledEditorColumns).
-    //        withEditingEnabled(this.enableEditing).
-    //        withRankingEnabled(this.enableRanking).
-    //        withTreeEnabled(true).
-    //        withSummaryColumns(this.summaryColumns).
-    //        withRankColumn(this.enableRanking ? this.rankColumnDataIndex : false).
-    //        shouldShowRowActionsColumn(rowActionOptions).
-    //        shouldResetFlexValuesToDefaults(isReconfiguring).
-    //        buildCmps(model);
-    //
-    //        console.log('_buildColumns', this.columns);
-    //    },
-    //
-    //    getAllFetchFields: function() {
-    //        return this.getStore().fetch;
-    //    },
-    //
-    //    _buildFetch: function() {
-    //        var fetchConfig = this.getStore().fetch || [];
-    //
-    //        if (fetchConfig === true) {
-    //            return fetchConfig;
-    //        }
-    //
-    //        var fetchFields = Ext.create('Rally.ui.grid.data.ColumnFetchBuilder').build({
-    //            grid: this,
-    //            columns: this.columns,
-    //            fetch: fetchConfig
-    //        });
-    //        console.log('_buildFetch', fetchFields);
-    //        return _.union(fetchFields, [this.treeColumnDataIndex]);
-    //    },
-    //
-    //    /**
-    //     * Highlights the row representing the passed in record.
-    //     * @param record
-    //     */
-    //    highlightRowForRecord: function(records) {
-    //        var store = this.getStore(),
-    //            recordIds = _.uniq(_.map(Ext.Array.from(records), function(record) {
-    //                return record.getId();
-    //            }));
-    //
-    //        _.each(recordIds, function(recordId) {
-    //            var relatedRecords = store.findAllRecordsWithId(recordId);
-    //
-    //            _.each(relatedRecords, function(relatedRecord) {
-    //                var row = this.getView().getNode(relatedRecord);
-    //                if (row) {
-    //                    Rally.util.Animation.highlight(Ext.fly(row).select('td'));
-    //                }
-    //            }, this);
-    //        }, this);
-    //    },
-    //
-    //    getItemSelector: function() {
-    //        return this.view.getItemSelector();
-    //    },
-    //
-    //    getRecord: function(x) {
-    //        return this.view.getRecord(x);
-    //    },
-    //
-    //    /**
-    //     * Get models used by this grid
-    //     *
-    //     * @return {Model[]} models
-    //     */
-    //    getModels: function() {
-    //        return [this.store.model];
-    //    },
-    //
-    //    _setupPlugins: function(config) {
-    //        var plugins = config.plugins || [];
-    //
-    //        plugins.push({ptype: 'rallytreegridobjectupdatelistener'});
-    //        plugins.push({ptype: 'rallycolorpickerplugin'});
-    //
-    //        if (this.enableEditing) {
-    //            plugins.push(Ext.apply({
-    //                ptype: 'rallycellediting',
-    //                messageBus: this._getMessageBus()
-    //            }, this.editingConfig));
-    //
-    //            if (this.enableValidationUi) {
-    //                plugins.push({ptype: 'rallygridvalidation'});
-    //                plugins.push({ptype: 'rallycellvalidationui'});
-    //            }
-    //        }
-    //
-    //        if (this.enableBlockedReasonPopover) {
-    //            plugins.push({ptype: 'rallyblockedreasonpopoverplugin'});
-    //        }
-    //
-    //        if (!this.treeColumnResizable) {
-    //            plugins.push({ptype: 'rallycolumnautosizerplugin'});
-    //        }
-    //
-    //        if (this.bufferedRenderer) {
-    //            plugins.push({
-    //                ptype: 'rallybufferedrenderer',
-    //                trailingBufferZone: 10, // increasing these values to 15 significantly degrades grid refresh performance
-    //                leadingBufferZone: 10,
-    //                variableRowHeight: this.variableRowHeight
-    //            });
-    //        }
-    //
-    //        if (this.store && this.store.enableHierarchy) {
-    //            plugins.push({ptype: 'rallytreegridchildpager'});
-    //        }
-    //
-    //        plugins.push({ptype: 'rallyclickhandlerplugin'});
-    //
-    //        if(this.enableInlineAdd){
-    //            plugins.push(Ext.apply({
-    //                ptype: 'rallyinlineaddrowexpander'
-    //            }, this.inlineAddConfig));
-    //        }
-    //
-    //        if (Rally.realtime.Realtime.enabled) {
-    //            plugins.push({ptype: 'rallyrealtime'});
-    //        }
-    //
-    //        plugins.push('rallyboardformattedidhoverable');
-    //
-    //        return _.uniq(plugins, 'ptype');
-    //    },
-    //
-    //    _setupFeatures: function(config) {
-    //        var features = [];
-    //        if (this._shouldShowSummary()) {
-    //            features.push({
-    //                ftype: 'summaryrow',
-    //                id: 'summaryrow'
-    //            });
-    //        }
-    //
-    //        return features;
-    //    },
-    //
-    //    _shouldShowSummary: function() {
-    //        return !(_.isEmpty(this.summaryColumns));
-    //    },
-    //
-    //    _resetCurrentPage: function() {
-    //        if (this.stateful) {
-    //            //  NOTE: Considered extending Ext.state.stateful and adding a method to override a property on the
-    //            //  state (which is what this is doing). If you are reading this to see how this was done, it's
-    //            //  probably time to go ahead and make that change.
-    //            var state = Ext.state.Manager.get(this.getStateId());
-    //            if (state && Ext.isObject(state.pagingToolbar)) {
-    //                state.pagingToolbar.currentPage = 1;
-    //                Ext.state.Manager.set(this.getStateId(), state);
-    //            }
-    //        }
-    //    },
-    //
-    //    _onStoreLoad: function() {
-    //        this._showNoData();
-    //        this._toggleHierarchy();
-    //    },
-    //
-    //    _onDataChanged: function() {
-    //        console.log('_onDataChanged');
-    //        this._showNoData();
-    //    },
-    //
-    //    _onExcludeByFilter: function(excludedRecord) {
-    //        if (_.isFunction(this.showNewItemExcludedByFiltersWarning)) {
-    //            this.showNewItemExcludedByFiltersWarning(excludedRecord);
-    //        }
-    //    },
-    //
-    //    _onMoveToPage: function(record, pageNumber) {
-    //        if (_.isFunction(this.showItemMovedToPageNotification)) {
-    //            var me = this;
-    //            this.showItemMovedToPageNotification(record, pageNumber, function() {
-    //                me.getStore().loadPage(pageNumber);
-    //            });
-    //        }
-    //    },
-    //
-    //    _showNoData: function() {
-    //        if (!this.store.getRootNode().hasChildNodes()) {
-    //            this.getView().showNoData({
-    //                noDataHelpLink: this.noDataHelpLink,
-    //                itemName: this.noDataItemName,
-    //                filters: [],
-    //                useFilterCollection: false
-    //            });
-    //        }
-    //    },
-    //
-    //    _toggleHierarchy: function() {
-    //        if (this.getStore().isHierarchyEnabled()) {
-    //            this.addCls('enable-hierarchy');
-    //            this.removeCls('disable-hierarchy');
-    //        } else {
-    //            this.removeCls('enable-hierarchy');
-    //            this.addCls('disable-hierarchy');
-    //        }
-    //    },
-    //
-    //    _buildDockedItems: function() {
-    //        this.dockedItems = this.dockedItems || [];
-    //        this.dockedItems.push(Ext.apply({
-    //            itemId: 'pagingToolbar',
-    //            xtype: 'rallytreepagingtoolbar',
-    //            dock: 'bottom',
-    //            store: this.store
-    //        }, this.pagingToolbarCfg));
-    //    }
-    //});
+Ext.define('Rally.technicalservices.ModelExtender',{
+    singleton: true,
 
-    //Ext.override(Rally.data.wsapi.ParentChildMapper, {
-    //
-    //    suffix: '_testcasestatus',
-    //
-    //    constructor: function() {
-    //
-    //        var hr_name = 'hierarchicalrequirement' + this.suffix;
-    //
-    //
-    //        this.parentChildTypeMap = {
-    //            hierarchicalrequirement: [
-    //                {typePath: 'defect', collectionName: 'Defects', parentField: 'Requirement'},
-    //                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
-    //                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'},
-    //                {typePath: 'hierarchicalrequirement', collectionName: 'Children', parentField: 'Parent'}
-    //            ],
-    //            defect: [
-    //                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
-    //                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'}
-    //            ],
-    //            defectsuite: [
-    //                {typePath: 'defect', collectionName: 'Defects', parentField: 'DefectSuites'},
-    //                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
-    //                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'}
-    //            ],
-    //            testset: [
-    //                {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
-    //                {typePath: 'testcase', collectionName: 'TestCases', parentField: 'TestSets'}
-    //            ]
-    //        };
-    //
-    //        this.parentChildTypeMap[hr_name] = [
-    //            {typePath: 'defect', collectionName: 'Defects', parentField: 'Requirement'},
-    //            {typePath: 'task', collectionName: 'Tasks', parentField: 'WorkProduct'},
-    //            {typePath: 'testcase', collectionName: 'TestCases', parentField: 'WorkProduct'},
-    //            {typePath: hr_name, collectionName: 'Children', parentField: 'Parent'}
-    //        ];
-    //    },
-    //    _sanitizeTypePath: function(typePath) {
-    //        var newTypePath = typePath.toLowerCase().replace(/ /g, '');
-    //        return newTypePath === 'userstory' ? 'hierarchicalrequirement' + this.suffix: newTypePath;
-    //    },
-    //
-    //    _mergePortfolioItemType: function(typeDef, portfolioItemsByOrdinal) {
-    //        var suffix = this.suffix,
-    //            typePath = typeDef.TypePath.toLowerCase() + suffix,
-    //            parent = portfolioItemsByOrdinal[typeDef.Ordinal + 1],
-    //            parentTypePath = (parent ? parent.TypePath + suffix : 'portfolioitem').toLowerCase();
-    //
-    //        if (typeDef.Ordinal === 0) {
-    //            this.parentChildTypeMap[typePath] = [{typePath: 'hierarchicalrequirement' + suffix, collectionName: 'UserStories', parentField: 'PortfolioItem'}];
-    //        }
-    //
-    //        if (parentTypePath) {
-    //            this.parentChildTypeMap[parentTypePath] = [{typePath: typePath, collectionName: 'Children', parentField: 'Parent'}];
-    //        }
-    //    }
-    //});
+    build: function(model) {
+        var default_fields = [{
+            name: '_totalTestCases',
+            defaultValue: null,
+            displayName: 'Total'
+        },{
+            name: '_actualTestCases',
+            displayName: 'Actual',
+            defaultValue: null
+        },{
+            name: '_plannedTestCases',
+            displayName: 'Planned',
+            defaultValue: null
+        },{
+            name: '_passRate',
+            displayName: 'Passed',
+            defaultValue: null
+        }, {
+            name: '_testCaseStatus',
+            displayName: 'Status',
+            defaultValue: null
+        }];
 
+        _.each(default_fields, function(df){
+            model.addField(df);
+        });
+        model.addMembers({
+            calculate: function(testCases) {
 
-    Ext.override(Rally.data.wsapi.TreeStore, {
-
-         constructor: function(config) {
-            this.callParent(arguments);
-            if (this.parentTypes.length === 0 || !this.model) {
-                Ext.Error.raise('You must configure the tree store with parentTypes and a model');
-            }
-
-            if (_.isEmpty(this.mapper)) {
-                this.mapper = Ext.create('Rally.data.wsapi.ParentChildMapper');
-            }
-
-            if (_.isEmpty(this.childLevelSorters)) {
-                this.childLevelSorters = this._getDefaultChildSorters();
-            }
-
-            this.addEvents(
-                /**
-                 * @event error
-                 * Fires when a store load comes back with errors
-                 * @param {String[]} errors
-                 */
-                'error',
-
-                /**
-                 * @event currentpagereset
-                 * Fires when the store determines that the current page needs to be reset to the first page of results
-                 */
-                'currentpagereset'
-            );
-
-
-            this._decorateModels();
-
-             this._extendModel(this.model);
-
-         },
-        _extendModel: function(model) {
-            var default_fields = [{
-                name: '_totalTestCases',
-                defaultValue: null,
-                displayName: 'Total'
-            },{
-                name: '_actualTestCases',
-                displayName: 'Actual',
-                defaultValue: null
-            },{
-                name: '_plannedTestCases',
-                displayName: 'Planned',
-                defaultValue: null
-            },{
-                name: '_passRate',
-                displayName: 'Passed',
-                defaultValue: null
-            }, {
-                name: '_testCaseStatus',
-                displayName: 'Status',
-                defaultValue: null
-            }];
-
-            _.each(default_fields, function(df){
-                model.addField(df);
-            });
-            model.addMembers({
-                calculate: function(testCases) {
-                    this.logger.log('calculate', this.get('Name'));
-                    this.set('_totalTestCases', testCases.length);
-                    this.set('_actualTestCases', this._getActual(testCases));
-                    this.set('_plannedTestCases', this._getPlan(testCases));
-                    this.set('_passRate', this._getPassRate(testCases));
-                    this.set('_testCaseStatus', this._getStatus(testCases));
-                },
-                _getActual: function(testCases){
-                    if (testCases.length > 0){
-                        return this._getTestCasesRun(testCases)/testCases.length;
+                this.set('_totalTestCases', testCases.length);
+                this.set('_actualTestCases', this._getActual(testCases));
+                this.set('_plannedTestCases', this._getPlan(testCases));
+                this.set('_passRate', this._getPassRate(testCases));
+                this.set('_testCaseStatus', this._getStatus(testCases));
+            },
+            _getActual: function(testCases){
+                if (testCases.length > 0){
+                    return this._getTestCasesRun(testCases)/testCases.length;
+                }
+                return 0;
+            },
+            _getPlan: function(testCases){
+                var today = new Date(),
+                    startDate = this.get('PlannedStartDate') || this.get('ActualStartDate') || null,
+                    endDate = this.get('PlannedEndDate') || this.get('ActualEndDate') || null;
+                console.log('_plan', this,startDate, endDate);
+                if (startDate && endDate){
+                    if (endDate < startDate){
+                        var tmp = endDate;
+                        endDate = startDate;
+                        startDate = tmp;
                     }
-                    return 0;
-                },
-                _getPlan: function(testCases){
-                    var today = new Date(),
-                        startDate = this.get('PlannedStartDate') || this.get('ActualStartDate') || null,
-                        endDate = this.get('PlannedEndDate') || this.get('ActualEndDate') || null;
 
-                    if (startDate && endDate){
-                        if (endDate < startDate){
-                            var tmp = endDate;
-                            endDate = startDate;
-                            startDate = tmp;
-                        }
+                    var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
+                        currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
 
-                        var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
-                            currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
-
-                        if (today >= startDate && today <= endDate){
-                            return totalRange > 0 ? currentRange/totalRange : 0;
-                        }
-
-                        if (today > endDate){
-                            return 1;
-                        }
-                        //if none of the above, then today is < start date and planned = 0
+                    if (today >= startDate && today <= endDate){
+                        return totalRange > 0 ? currentRange/totalRange : 0;
                     }
-                    return 0;
-                },
-                _getTestCasesRun: function(testCases){
-                    var run = 0;
-                    _.each(testCases, function(tc){
-                        if (tc.get('LastRun')){
-                            run++;
-                        }
-                    });
-                    return run;
-                },
-                _getPassRate: function(testCases){
-                    var passed = 0,
-                        passVerdicts = ['Pass'],
-                        total = testCases.length;
 
-                    _.each(testCases, function(tc){
-                        if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
-                            passed++;
-                        }
-                    });
-
-                    if (total > 0){
-                        return passed/total;
+                    if (today > endDate){
+                        return 1;
                     }
-                    return 0;
-                },
-                _getStatus: function(testCases){
-                    // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
-
-                    var run = 0,
-                        passed = 0,
-                        total = 0;
-
-                    _.each(testCases.length, function(tc){
-                        if (tc.get('LastRun')){
-                            run++;
-                        }
-                        if (tc.get('LastVerdict') === "Pass"){
-                            passed++;
-                        }
-                        total++;
-                    });
-
-                    if (total === 0) {
-                        return "NONE";
+                    //if none of the above, then today is < start date and planned = 0
+                }
+                return 0;
+            },
+            _getTestCasesRun: function(testCases){
+                var run = 0;
+                _.each(testCases, function(tc){
+                    if (tc.get('LastRun')){
+                        run++;
                     }
-                    if (run === 0){
-                        return "NONE_RUN";
+                });
+                return run;
+            },
+            _getPassRate: function(testCases){
+                var passed = 0,
+                    passVerdicts = ['Pass'],
+                    total = testCases.length;
+
+                _.each(testCases, function(tc){
+                    if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
+                        passed++;
                     }
-                    if (passed > 0){
-                        if (run === passed){
-                            if (run === total){
-                                return "ALL_RUN_ALL_PASSING";
-                            }
-                            return "SOME_RUN_ALL_PASSING";
-                        }
+                });
+
+                if (total > 0){
+                    return passed/total;
+                }
+                return 0;
+            },
+            _getStatus: function(testCases){
+                // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
+
+                var run = 0,
+                    passed = 0,
+                    total = testCases.length;
+
+                _.each(testCases, function(tc){
+                    if (tc.get('LastRun')){
+                        run++;
+                    }
+                    if (tc.get('LastVerdict') === "Pass"){
+                        passed++;
+                    }
+                });
+
+                if (testCases.length === 0) {
+                    return "NONE";
+                }
+                if (run === 0){
+                    return "NONE_RUN";
+                }
+                if (passed > 0){
+                    if (run === passed){
                         if (run === total){
-                            //return "ALL_RUN_SOME_NOT_PASSING";
+                            return "ALL_RUN_ALL_PASSING";
                         }
-                        return "SOME_RUN_SOME_NOT_PASSING";
+                        return "SOME_RUN_ALL_PASSING";
                     }
-
                     if (run === total){
-                        return "ALL_RUN_NONE_PASSING";
+                        return "ALL_RUN_SOME_NOT_PASSING";
                     }
-                    //return "SOME_RUN_NONE_PASSING";
                     return "SOME_RUN_SOME_NOT_PASSING";
                 }
-            });
-        }
-    });
 
-    Ext.override(Ext.data.NodeInterface,{
-        decorate: function(modelClass) {
-            var idName, idField, idType;
-
-            // get the reference to the model class, in case the argument was a string or a record
-            if (typeof modelClass == 'string') {
-                modelClass = Ext.ModelManager.getModel(modelClass);
-            } else if (modelClass.isModel) {
-                modelClass = Ext.ModelManager.getModel(modelClass.modelName);
-            }
-
-            // avoid unnecessary work in case the model was already decorated
-            if (modelClass.prototype.isNode) {
-                return;
-            }
-
-            idName  = modelClass.prototype.idProperty;
-            idField = modelClass.prototype.fields.get(idName);
-            idType  = modelClass.prototype.fields.get(idName).type.type;
-
-            modelClass.override(this.getPrototypeBody());
-            this.applyFields(modelClass, [
-                { name : 'parentId',   type : idType,    defaultValue : null,  useNull : idField.useNull                },
-                { name : 'index',      type : 'int',     defaultValue : -1,    persist : false          , convert: null },
-                { name : 'depth',      type : 'int',     defaultValue : 0,     persist : false          , convert: null },
-                { name : 'expanded',   type : 'bool',    defaultValue : false, persist : false          , convert: null },
-                { name : 'expandable', type : 'bool',    defaultValue : true,  persist : false          , convert: null },
-                { name : 'checked',    type : 'auto',    defaultValue : null,  persist : false          , convert: null },
-                { name : 'leaf',       type : 'bool',    defaultValue : false                            },
-                { name : 'cls',        type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'iconCls',    type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'icon',       type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'root',       type : 'boolean', defaultValue : false, persist : false          , convert: null },
-                { name : 'isLast',     type : 'boolean', defaultValue : false, persist : false          , convert: null },
-                { name : 'isFirst',    type : 'boolean', defaultValue : false, persist : false          , convert: null },
-                { name : 'allowDrop',  type : 'boolean', defaultValue : true,  persist : false          , convert: null },
-                { name : 'allowDrag',  type : 'boolean', defaultValue : true,  persist : false          , convert: null },
-                { name : 'loaded',     type : 'boolean', defaultValue : false, persist : false          , convert: null },
-                { name : 'loading',    type : 'boolean', defaultValue : false, persist : false          , convert: null },
-                { name : 'href',       type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'hrefTarget', type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'qtip',       type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'qtitle',     type : 'string',  defaultValue : '',    persist : false          , convert: null },
-                { name : 'qshowDelay', type : 'int',     defaultValue : 0,     persist : false          , convert: null },
-                { name : 'children',   type : 'auto',    defaultValue : null,  persist : false          , convert: null }
-            ]);
-        },
-    });
-Ext.define('Rally.technicalservices.PortfolioTestStatusRow',{
-    constructor: function(config) {
-        this.portfolioItem = config.portfolioItem;
-        this.testCases = config.testCases;
-    },
-    getDataRow: function(){
-
-        console.log('getDataRow', this.testCases);
-        return {
-            drop: 'drop',
-            subject: this.portfolioItem.get('Name'),
-            actual: this._getActual(),
-            plan: this._getPlan(),
-            passRate: this._getPassRate(),
-            testCaseStatus: this._getStatus(),
-            total: this.testCases.length,
-            certificationDate: this.portfolioItem.get('PlannedEndDate'),
-            comments: this._getComments(),
-
-        };
-    },
-    _getActual: function(){
-        if (this.testCases.length > 0){
-            console.log('_etActual',this._getTestCasesRun(), this.testCases.length);
-            return this._getTestCasesRun()/this.testCases.length;
-        }
-        return 0;
-    },
-    _getPlan: function(){
-        var today = new Date(),
-            startDate = this.portfolioItem.get('PlannedStartDate') || this.portfolioItem.get('ActualStartDate') || null,
-            endDate = this.portfolioItem.get('PlannedEndDate') || this.portfolioItem.get('ActualEndDate') || null;
-
-        if (startDate && endDate){
-            if (endDate < startDate){
-                var tmp = endDate;
-                endDate = startDate;
-                startDate = tmp;
-            }
-            console.log('_getPlan', endDate, startDate
-            );
-            var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
-                currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
-
-            if (today >= startDate && today <= endDate){
-                return totalRange > 0 ? currentRange/totalRange : 0;
-            }
-
-            if (today > endDate){
-                return 1;
-            }
-            //if none of the above, then today is < start date and planned = 0
-        }
-        return 0;
-    },
-    _getTestCasesRun: function(){
-        var run = 0;
-        _.each(this.testCases, function(tc){
-            if (tc.get('LastRun')){
-                run++;
-            }
-        });
-        return run;
-    },
-    _getPassRate: function(){
-        var passed = 0,
-            passVerdicts = ['Pass'],
-            total = this.testCases.length;
-
-        _.each(this.testCases, function(tc){
-            if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
-                passed++;
-            }
-        });
-
-        if (total > 0){
-            return passed/total;
-        }
-        return 0;
-    },
-    _getStatus: function(){
-        // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
-
-        var run = 0,
-            passed = 0,
-            total = 0;
-
-        _.each(this.testCases.length, function(tc){
-            if (tc.get('LastRun')){
-                run++;
-            }
-            if (tc.get('LastVerdict') === "Pass"){
-                passed++;
-            }
-            total++;
-        });
-
-        if (total === 0) {
-            return "NONE";
-        }
-        if (run === 0){
-            return "NONE_RUN";
-        }
-        if (passed > 0){
-            if (run === passed){
                 if (run === total){
-                    return "ALL_RUN_ALL_PASSING";
+                    return "ALL_RUN_NONE_PASSING";
                 }
-                return "SOME_RUN_ALL_PASSING";
+                return "SOME_RUN_NONE_PASSING";
             }
-            if (run === total){
-                //return "ALL_RUN_SOME_NOT_PASSING";
-            }
-            return "SOME_RUN_SOME_NOT_PASSING";
-        }
+        });
+    }
+});
+Ext.override(Rally.ui.grid.TreeGrid, {
+    _mergeColumnConfigs: function(newColumns, oldColumns) {
 
-        if (run === total){
-            return "ALL_RUN_NONE_PASSING";
-        }
-        //return "SOME_RUN_NONE_PASSING";
-        return "SOME_RUN_SOME_NOT_PASSING";
-    },
-    _getCertificationDate: function(){
-        return 'certification Date';
-    },
-    _getComments: function(){
-        return 'comments';
+        var mergedColumns = _.map(newColumns, function(newColumn) {
+            var oldColumn = _.find(oldColumns, {dataIndex: this._getDataIndex(newColumn)});
+            if (oldColumn) {
+                return this._getColumnConfigFromColumn(oldColumn);
+            }
+
+            return newColumn;
+        }, this);
+
+        mergedColumns = mergedColumns.concat(this.config.derivedColumns);
+        return mergedColumns;
     }
 });
 
+Ext.define('Rally.ui.renderer.template.testcasestatus.PercentDone', {
+    requires: [
+        'Rally.util.HealthColorCalculator'
+    ],
+    extend: 'Rally.ui.renderer.template.progressbar.ProgressBarTemplate',
+
+    config: {
+        calculateColorFn: function(recordData) {
+            return '#7CAFD7';
+        },
+        isClickable: true
+    },
+
+    constructor: function(config) {
+        this.initConfig(config);
+        return this.callParent(arguments);
+    }
+});
+
+Ext.override(Rally.ui.renderer.RendererFactory,{
+
+    fieldTemplates: {
+        _testcasestatus: function(){
+            return Ext.create('Rally.ui.renderer.template.StringTemplate', {
+                fieldName: '_testCaseStatus',
+                titleCase: true,
+                toSpace: ['_']
+            });
+        },
+        _actualtestcases: function(){
+            return Ext.create('Ext.XTemplate', '{[this.getPercent(values)]}', {
+                getPercent: function(record) {
+                    v = record._actualTestCases;
+                    if (v !== null && !isNaN(Number(v))){
+                        return Math.round(v * 100) + '%';
+                    }
+                    return v || '--';
+                }
+            });
+        },
+        _passrate: function(){
+            return Ext.create('Ext.XTemplate', '{[this.getPercent(values)]}', {
+                getPercent: function(record) {
+                    v = record._passRate;
+                    if (v !== null && !isNaN(Number(v))){
+                        return Math.round(v * 100) + '%';
+                    }
+                    return v || '--';
+                }
+            });
+        },
+        _plannedtestcases: function(){
+            return Ext.create('Ext.XTemplate', '{[this.getPercent(values)]}', {
+                getPercent: function(record) {
+                    v = record._plannedTestCases;
+                    if (v !== null && !isNaN(Number(v))){
+                        return Math.round(v * 100) + '%';
+                    }
+                    return v || '--';
+                }
+            });
+        },
+        attributetype: function() {
+            return Ext.create('Rally.ui.renderer.template.AttributeTypeTemplate');
+        },
+
+        blocked: function() {
+            return Ext.create('Rally.ui.renderer.template.BlockedTemplate');
+        },
+
+        defects: function() {
+            return Ext.create('Rally.ui.renderer.template.status.DefectStatusTemplate');
+        },
+
+        defectstatus: function() {
+            return toTitleCaseFn('DefectStatus');
+        },
+
+        disabled: function() {
+            return Ext.create('Rally.ui.renderer.template.BooleanTemplate', {
+                fieldName: 'Disabled',
+                alt: 'Disabled'
+            });
+        },
+
+        discussion: function() {
+            return Ext.create('Rally.ui.renderer.template.status.DiscussionStatusTemplate');
+        },
+
+        displaycolor: function() {
+            return Ext.create('Rally.ui.renderer.template.DisplayColorTemplate');
+        },
+
+        formattedid: function(field, config) {
+            return Ext.create('Rally.ui.renderer.template.FormattedIDTemplate', config);
+        },
+
+        hidden: function(field) {
+            return Ext.create('Rally.ui.renderer.template.BooleanTemplate', {
+                fieldName: 'Hidden',
+                showCheckWhenTrue: false
+            });
+        },
+
+        parent: function() {
+            return Ext.create('Rally.ui.renderer.template.ParentTemplate');
+        },
+
+        percentdonebystorycount: function() {
+            return Ext.create('Rally.ui.renderer.template.progressbar.PercentDoneByStoryCountTemplate');
+        },
+
+        percentdonebystoryplanestimate: function() {
+            return Ext.create('Rally.ui.renderer.template.progressbar.PercentDoneByStoryPlanEstimateTemplate');
+        },
+
+        predecessorsandsuccessors: function() {
+            return Ext.create('Rally.ui.renderer.template.status.PredecessorsAndSuccessorsStatusTemplate');
+        },
+
+        rank: function(field) {
+            return Ext.create('Rally.ui.renderer.template.DecimalTemplate', {
+                fieldName: field.name
+            });
+        },
+
+        requirement: function(field) {
+            return Ext.create('Rally.ui.renderer.template.ChildObjectFormattedIDTemplate', {
+                childObjectProperty: 'Requirement',
+                showName: true
+            });
+        },
+
+        schedulestate: function(field){
+            return Ext.create('Rally.ui.renderer.template.ScheduleStateTemplate', {
+                field: field,
+                showTrigger: true
+            });
+        },
+
+        statechangeddate: function() {
+            return Ext.create('Rally.ui.renderer.template.DaysInThisColumnTemplate');
+        },
+
+        tags: function() {
+            return Ext.create('Rally.ui.renderer.template.PillTemplate', { collectionName: 'Tags', cls: 'rui-tag-list-item'});
+        },
+
+        milestones: function() {
+            return Ext.create('Rally.ui.renderer.template.PillTemplate', { collectionName: 'Milestones', iconCls: 'icon-milestone', cls: 'milestone-pill'});
+        },
+
+        //TODO: Remove TaskActualTotalTemplate once backend supports TaskActualTotal on TestSet. DE23100
+        taskactualtotal: function(){
+            return Ext.create('Rally.ui.renderer.template.TaskActualTotalTemplate');
+        },
+
+        tasks: function() {
+            return Ext.create('Rally.ui.renderer.template.status.TaskStatusTemplate');
+        },
+
+        taskstatus: function() {
+            return toTitleCaseFn('TaskStatus');
+        },
+
+        testcase: function(field) {
+            return Ext.create('Rally.ui.renderer.template.ChildObjectFormattedIDTemplate', {
+                childObjectProperty: 'TestCase',
+                showName: true
+            });
+        },
+
+        testcases: function() {
+            return Ext.create('Rally.ui.renderer.template.status.TestCaseStatusTemplate');
+        },
+
+        testcasestatus: function() {
+            return toTitleCaseFn('TestCaseStatus');
+        },
+
+        testfolder: function(field) {
+            return Ext.create('Rally.ui.renderer.template.ChildObjectFormattedIDTemplate', {
+                childObjectProperty: 'TestFolder',
+                showName: true
+            });
+        },
+
+        visibilityonchildprojects: function(field) {
+            return Ext.create('Rally.ui.renderer.template.VisibilityOnSubprojectsTemplate');
+        },
+
+        workproduct: function() {
+            return Ext.create('Rally.ui.renderer.template.ChildObjectFormattedIDTemplate', {
+                childObjectProperty: 'WorkProduct',
+                showName: true
+            });
+        },
+
+        targetproject: function () {
+            return Ext.create('Ext.XTemplate', '{[this.getProjectName(values)]}', {
+                getProjectName: function(record) {
+                    return Rally.ui.MilestoneTargetProjectPermissionsHelper.getProjectName(record);
+                }
+            });
+        }
+    }
+
+});
 Ext.define('Rally.technicalservices.Toolbox',{
     singleton: true,
     fetchWsapiRecords: function(config){
@@ -1492,7 +620,7 @@ Ext.define("test-status-by-portfolio-item", {
         name : "test-status-by-portfolio-item"
     },
 
-    featureFetch: ['ObjectID','FormattedID','Name','PlannedStartDate','PlannedEndDate','Parent'],
+    featureFetch: ['ObjectID','FormattedID','Name','PlannedStartDate','PlannedEndDate','ActualStartDate','ActualEndDate','Parent'],
     testCaseFetch: ['ObjectID','FormattedID','WorkProduct','Type','LastVerdict','LastRun'],
 
     launch: function() {
@@ -1544,7 +672,8 @@ Ext.define("test-status-by-portfolio-item", {
             models: featureConfig.models,
             enableHierarchy: true,
             autoLoad: true,
-            filters: featureConfig.filters
+            filters: featureConfig.filters,
+            fetch: this.featureFetch
         }).then({
             success: function(store) { this._addGridboard(store, featureConfig); },
             failure: function(msg){
@@ -1555,29 +684,32 @@ Ext.define("test-status-by-portfolio-item", {
     },
     _addGridboard: function (store, featureConfig) {
 
-        this.extendModel(store.model);
+        Rally.technicalservices.ModelExtender.build(store.model);
+        _.each(store.models, Rally.technicalservices.ModelExtender.build);
+
         store.on('load', this._fetchUserStories, this);
         this.logger.log('_addGridboard',featureConfig);
         this.add({
             xtype: 'rallygridboard',
             modelNames: featureConfig.models,
-            //plugins: [{
-            //    ptype: 'rallygridboardfieldpicker',
-            //    headerPosition: 'right',
-            //    modelNames: featureConfig.models,
-            //    //stateful: true,
-            //    //stateId: 'test-status-columns'
-            //}],
+            context: this.getContext(),
+            plugins: [{
+                ptype: 'rallygridboardfieldpicker',
+                headerPosition: 'right',
+                modelNames: store.models,
+                stateful: true,
+                stateId: 'test-status-columns-10'
+            }],
             toggleState: 'grid',
             stateful: true,
-            stateId: 'test-status-gridboard-4',
+            stateId: 'test-status-gridboard-10',
             gridConfig: {
                 store: store,
                 storeConfig: {
                     filters: featureConfig.filters
                 },
                 columnCfgs: this._getColumnCfgs(),
-                derivedColumns: ['_totalTestCases']
+                derivedColumns: this._getDerivedColumns()
             },
             height: this.getHeight()
         });
@@ -1601,10 +733,11 @@ Ext.define("test-status-by-portfolio-item", {
     _fetchUserStories: function(store, node, records){
         this.logger.log('_fetchUserStories', store, node, records);
 
-
-
         if (node.parentNode){
-            //We only need to do this if we are loading the top level of stories.
+
+            if (records && records.length > 0 && records[0].get('_type').toLowerCase().match(/^portfolioitem/)){
+                this._processCalculatedFields(records);
+            }
             return;
         }
 
@@ -1622,6 +755,7 @@ Ext.define("test-status-by-portfolio-item", {
             },
             scope: this
         });
+
     },
     _fetchTestCases: function(features, userStories){
         var configs = this._getTestCaseConfigs(userStories),
@@ -1630,7 +764,9 @@ Ext.define("test-status-by-portfolio-item", {
         Deft.Promise.all(promises).then({
             success: function(results){
                 this.logger.log('_fetchTestCases', configs, results);
-                this._processCalculatedFields(features, userStories, _.flatten(results));
+                var testCases = _.flatten(results);
+                this.testCasesByAncestor = this._getTestCasesByAncestors(userStories, testCases);
+                this._processCalculatedFields(features);
                // var store = this._buildCustomStore(features, userStories, _.flatten(results));
                 //this._displayGrid(store);
             },
@@ -1640,22 +776,12 @@ Ext.define("test-status-by-portfolio-item", {
             scope: this
         });
     },
-    _processCalculatedFields: function(portfolioItems, userStories, testCases){
-        this.logger.log('_processCalculatedFields', portfolioItems, userStories, testCases);
-        var testCasesByPortfolioItem = this._getTestCasesByPortfolioItem(userStories, testCases);
-        this.logger.log('_processCalculatedFields', testCasesByPortfolioItem);
+    _processCalculatedFields: function(records){
+        this.logger.log('_processCalculatedFields', records);
 
-        var data = [];
-        _.each(portfolioItems, function(p){
-            console.log('p',p,testCasesByPortfolioItem[p.get('ObjectID')]);
-            this.calculate(p, testCasesByPortfolioItem[p.get('ObjectID')] || [])
+        _.each(records, function(r){
+            r.calculate(this.testCasesByAncestor[r.get('ObjectID')] || []);
         }, this);
-
-        var fields = _.keys(data[0]);
-        return Ext.create('Rally.data.custom.Store',{
-            data: data,
-            fields: fields
-        });
     },
     _buildCustomStore: function(portfolioItems, userStories, testCases){
         this.logger.log('_buildCustomStore', portfolioItems, userStories, testCases);
@@ -1677,9 +803,9 @@ Ext.define("test-status-by-portfolio-item", {
             fields: fields
         });
     },
-    _getTestCasesByPortfolioItem: function(stories, testCases){
+    _getTestCasesByAncestors: function(stories, testCases){
 
-        var testCasesByStory = _.reduce(testCases, function(sHash, tc){
+        var testCasesByAncestorOid = _.reduce(testCases, function(sHash, tc){
             var sid = tc.get('WorkProduct') && tc.get('WorkProduct').ObjectID || null;
             if (sid){
                 if (!sHash[sid]){
@@ -1694,23 +820,21 @@ Ext.define("test-status-by-portfolio-item", {
         _.each(stories, function(s){
             var feature = s.get('Feature') && s.get('Feature').ObjectID || null,
                 sid = s.get('ObjectID');
-            console.log('sid',feature,  sid);
-            if (feature && testCasesByStory[sid]){
+            if (feature && testCasesByAncestorOid[sid]){
                 var featureParent = s.get('Feature') && s.get('Feature').Parent && s.get('Feature').Parent.ObjectID;
-                if (!h[feature]){
-                    h[feature] = [];
+                if (!testCasesByAncestorOid[feature]){
+                    testCasesByAncestorOid[feature] = [];
                 }
-                if (featureParent && !h[featureParent]){
-                    h[featureParent] = [];
+                if (featureParent && !testCasesByAncestorOid[featureParent]){
+                    testCasesByAncestorOid[featureParent] = [];
                 }
-                h[feature] = h[feature].concat(testCasesByStory[sid]);
-                if (featureParent) { h[featureParent] = h[featureParent].concat(testCasesByStory[sid]); }
-                console.log('hash', feature, sid, s.get('TestCaseStatus'), testCasesByStory[sid], _.map(testCasesByStory[sid], function(tc){ return tc.get('FormattedID');}));
+                testCasesByAncestorOid[feature] = testCasesByAncestorOid[feature].concat(testCasesByAncestorOid[sid]);
+                if (featureParent) { testCasesByAncestorOid[featureParent] = testCasesByAncestorOid[featureParent].concat(testCasesByAncestorOid[sid]); }
             }
         });
 
-        this.logger.log('_buildCustomStore', h);
-        return h;
+        this.logger.log('_buildCustomStore', testCasesByAncestorOid);
+        return testCasesByAncestorOid;
     },
     _getPortfolioItemLevel: function(portfolioItem){
         var idx = -1,
@@ -1816,63 +940,45 @@ Ext.define("test-status-by-portfolio-item", {
             columnCfgs: this._getColumnCfgs()
         });
     },
-    _addFieldsToModel: function(model){
-
-        //model.addField({name: '_totalTestCases', defaultValue: '---' });
-        //model.addField({name: '_actualTestCases', defaultValue: '---' });
-        //model.addField({name: '_plannedTestCases', defaultValue: '---' });
-        //model.addField({name: '_passRate', defaultValue: '---' });
-        //model.addField({name: '_testCaseStatus', defaultValue: '---' });
-        //model.addMembers({
-        //    calculate: function(testCases){
-        //
-        //    }
-        //});
-    },
-    _getColumnCfgs: function(){
+    _getDerivedColumns: function(){
         var commentField = this.getSetting('commentsField')
-        this.logger.log('_getColumnCfgs', commentField);
 
         return [{
-            dataIndex: 'Name',
-            text: 'Name',
-            flex: 1
-        }, {
             dataIndex: '_totalTestCases',
-            text: 'Total',
-            renderer: function(v,m,r){
-                return r.get('_totalTestCases');
-            }
+            text: 'Total'
         },{
             dataIndex: '_actualTestCases',
-            text: 'Actual',
-            renderer: this._percentRenderer
+            text: 'Actual'
         },{
             dataIndex: '_plannedTestCases',
-            text: 'Planned',
-            renderer: this._percentRenderer
+            text: 'Planned'
         },{
             dataIndex: '_passRate',
-            text: 'Passed',
-            renderer: this._percentRenderer
+            text: 'Passed'
         }, {
             dataIndex: '_testCaseStatus',
             text: 'Status',
-        },{
-            dataIndex: 'PlannedEndDate',
-            text: 'Planned End Date'
         },{
             dataIndex: commentField,
             text: 'Comments',
             flex: 1
         }];
     },
-    _percentRenderer: function(v){
-        return 199;
-        if (v !== null && !isNaN(v)){
-            return Math.round(v * 100) + '%';
-        }
-        return v || '';
+    _getColumnCfgs: function(){
+        this.logger.log('_getColumnCfgs');
+
+        var fields = [{
+            dataIndex: 'Name',
+            text: 'Name',
+            flex: 1
+        },{
+            dataIndex: 'PlannedEndDate',
+            text: 'Planned End Date'
+        }];
+
+        fields = fields.concat(this._getDerivedColumns());
+
+        return fields;
     },
     getOptions: function() {
         return [
@@ -1936,253 +1042,7 @@ Ext.define("test-status-by-portfolio-item", {
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
         this._addSelector();
-    },
-    extendModel: function(model) {
-        console.log('extend', model);
-
-        var default_fields = [{
-            name: '_totalTestCases',
-            defaultValue: null,
-            displayName: 'Total'
-        },{
-            name: '_actualTestCases',
-            displayName: 'Actual',
-            defaultValue: null
-        },{
-            name: '_plannedTestCases',
-            displayName: 'Planned',
-            defaultValue: null
-        },{
-            name: '_passRate',
-            displayName: 'Passed',
-            defaultValue: null
-        }, {
-            name: '_testCaseStatus',
-            displayName: 'Status',
-            defaultValue: null
-        }];
-
-        _.each(default_fields, function(df){
-            model.addField(df);
-        });
-        model.addMembers({
-            calculate: function(testCases) {
-                this.logger.log('calculate', this.get('Name'));
-                this.set('_totalTestCases', testCases.length);
-                this.set('_actualTestCases', this._getActual(testCases));
-                this.set('_plannedTestCases', this._getPlan(testCases));
-                this.set('_passRate', this._getPassRate(testCases));
-                this.set('_testCaseStatus', this._getStatus(testCases));
-            },
-            _getActual: function(testCases){
-                if (testCases.length > 0){
-                    return this._getTestCasesRun(testCases)/testCases.length;
-                }
-                return 0;
-            },
-            _getPlan: function(testCases){
-                var today = new Date(),
-                    startDate = this.get('PlannedStartDate') || this.get('ActualStartDate') || null,
-                    endDate = this.get('PlannedEndDate') || this.get('ActualEndDate') || null;
-
-                if (startDate && endDate){
-                    if (endDate < startDate){
-                        var tmp = endDate;
-                        endDate = startDate;
-                        startDate = tmp;
-                    }
-
-                    var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
-                        currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
-
-                    if (today >= startDate && today <= endDate){
-                        return totalRange > 0 ? currentRange/totalRange : 0;
-                    }
-
-                    if (today > endDate){
-                        return 1;
-                    }
-                    //if none of the above, then today is < start date and planned = 0
-                }
-                return 0;
-            },
-            _getTestCasesRun: function(testCases){
-                var run = 0;
-                _.each(testCases, function(tc){
-                    if (tc.get('LastRun')){
-                        run++;
-                    }
-                });
-                return run;
-            },
-            _getPassRate: function(testCases){
-                var passed = 0,
-                    passVerdicts = ['Pass'],
-                    total = testCases.length;
-
-                _.each(testCases, function(tc){
-                    if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
-                        passed++;
-                    }
-                });
-
-                if (total > 0){
-                    return passed/total;
-                }
-                return 0;
-            },
-            _getStatus: function(testCases){
-                // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
-
-                var run = 0,
-                    passed = 0,
-                    total = 0;
-
-                _.each(testCases.length, function(tc){
-                    if (tc.get('LastRun')){
-                        run++;
-                    }
-                    if (tc.get('LastVerdict') === "Pass"){
-                        passed++;
-                    }
-                    total++;
-                });
-
-                if (total === 0) {
-                    return "NONE";
-                }
-                if (run === 0){
-                    return "NONE_RUN";
-                }
-                if (passed > 0){
-                    if (run === passed){
-                        if (run === total){
-                            return "ALL_RUN_ALL_PASSING";
-                        }
-                        return "SOME_RUN_ALL_PASSING";
-                    }
-                    if (run === total){
-                        //return "ALL_RUN_SOME_NOT_PASSING";
-                    }
-                    return "SOME_RUN_SOME_NOT_PASSING";
-                }
-
-                if (run === total){
-                    return "ALL_RUN_NONE_PASSING";
-                }
-                //return "SOME_RUN_NONE_PASSING";
-                return "SOME_RUN_SOME_NOT_PASSING";
-            }
-        });
-    },
-    calculate: function(portfolioItem, testCases) {
-        this.logger.log('calculate', portfolioItem.get('Name'));
-        portfolioItem.set('_totalTestCases', testCases.length);
-        portfolioItem.set('_actualTestCases', this._getActual(testCases));
-        portfolioItem.set('_plannedTestCases', this._getPlan(portfolioItem, testCases));
-        portfolioItem.set('_passRate', this._getPassRate(testCases));
-        portfolioItem.set('_testCaseStatus', this._getStatus(testCases));
-    },
-    _getActual: function(testCases){
-        if (testCases.length > 0){
-            return this._getTestCasesRun(testCases)/testCases.length;
-        }
-        return 0;
-    },
-    _getPlan: function(portfolioItem, testCases){
-        var today = new Date(),
-            startDate = portfolioItem.get('PlannedStartDate') || portfolioItem.get('ActualStartDate') || null,
-            endDate = portfolioItem.get('PlannedEndDate') || portfolioItem.get('ActualEndDate') || null;
-
-        if (startDate && endDate){
-            if (endDate < startDate){
-                var tmp = endDate;
-                endDate = startDate;
-                startDate = tmp;
-            }
-
-            var totalRange = Rally.util.DateTime.getDifference(endDate, startDate, 'hour'),
-                currentRange = Rally.util.DateTime.getDifference(today, startDate, 'hour');
-
-            if (today >= startDate && today <= endDate){
-                return totalRange > 0 ? currentRange/totalRange : 0;
-            }
-
-            if (today > endDate){
-                return 1;
-            }
-            //if none of the above, then today is < start date and planned = 0
-        }
-        return 0;
-    },
-    _getTestCasesRun: function(testCases){
-        var run = 0;
-        _.each(testCases, function(tc){
-            if (tc.get('LastRun')){
-                run++;
-            }
-        });
-        return run;
-    },
-    _getPassRate: function(testCases){
-        var passed = 0,
-            passVerdicts = ['Pass'],
-            total = testCases.length;
-
-        _.each(testCases, function(tc){
-            if (Ext.Array.contains(passVerdicts, tc.get('LastVerdict'))){
-                passed++;
-            }
-        });
-
-        if (total > 0){
-            return passed/total;
-        }
-        return 0;
-    },
-    _getStatus: function(testCases){
-        // "NONE", "NONE_RUN", "SOME_RUN_SOME_NOT_PASSING", "SOME_RUN_ALL_PASSING", "ALL_RUN_NONE_PASSING", "ALL_RUN_ALL_PASSING"
-
-        var run = 0,
-            passed = 0,
-            total = 0;
-
-        _.each(testCases.length, function(tc){
-            if (tc.get('LastRun')){
-                run++;
-            }
-            if (tc.get('LastVerdict') === "Pass"){
-                passed++;
-            }
-            total++;
-        });
-
-        if (total === 0) {
-            return "NONE";
-        }
-        if (run === 0){
-            return "NONE_RUN";
-        }
-        if (passed > 0){
-            if (run === passed){
-                if (run === total){
-                    return "ALL_RUN_ALL_PASSING";
-                }
-                return "SOME_RUN_ALL_PASSING";
-            }
-            if (run === total){
-                //return "ALL_RUN_SOME_NOT_PASSING";
-            }
-            return "SOME_RUN_SOME_NOT_PASSING";
-        }
-
-        if (run === total){
-            return "ALL_RUN_NONE_PASSING";
-        }
-        //return "SOME_RUN_NONE_PASSING";
-        return "SOME_RUN_SOME_NOT_PASSING";
     }
-
 });
 
             
