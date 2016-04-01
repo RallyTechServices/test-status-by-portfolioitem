@@ -8,7 +8,7 @@ Ext.define('Rally.technicalservices.Toolbox',{
                 if (success){
                     deferred.resolve(records);
                 } else {
-                    deferred.reject(Ext.String.format("Error getting {0} for {1}: {2}",config, operation.error.errors.join(',')));
+                    deferred.reject(Ext.String.format("Error getting {0}: {1}",config.model, operation.error.errors.join(',')));
                 }
             }
         });

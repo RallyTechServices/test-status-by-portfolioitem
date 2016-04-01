@@ -38,18 +38,31 @@ Ext.define("test-status-by-portfolio-item", {
 
         this.removeAll();
 
-        var cb = this.add({
-            xtype: 'rallycombobox',
-            itemId: 'cb-portfolio-item',
-            fieldLabel: 'Portfolio Item',
-            labelAlign: 'right',
+        var cb = Ext.create('Rally.ui.combobox.ComboBox',{
             storeConfig: {
                 model: portfolioItemType,
+                fetch: ['FormattedID','ObjectID','Name'],
                 remoteFilter: false,
                 autoLoad: true
             },
-            width: 300
+            fieldLabel: 'Portfolio Item',
+            itemId: 'cb-portfolio-item',
+            margin: 10,
+            valueField: 'ObjectID',
+            displayField: 'FormattedID',
+            width: 400,
+            listConfig: {
+                itemTpl: '{FormattedID}: {Name}'
+            },
+            filterProperties: ['Name','FormattedID'],
+            fieldCls: 'pi-selector',
+            displayTpl: '<tpl for=".">' +
+            '{[values["FormattedID"]]}: {[values["Name"]]}' +
+            '<tpl if="xindex < xcount">,</tpl>' +
+            '</tpl>'
         });
+        this.add(cb);
+
         cb.on('change', this._fetchGridboardData, this);
     },
     _showError: function(msg){
