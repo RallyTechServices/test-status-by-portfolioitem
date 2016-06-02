@@ -1,4 +1,20 @@
 #Test Status by Portfolio Item
+App to show test case status by portfolio item.  
+
+Grid shows a list of the portfolio items beneath the selected top level portfolio item.  The type of the top level portfolio item 
+  is configured in the App Settings.  
+  
+![ScreenShot](/images/test-status-by-portfolioitem.png)  
+    
+  
+Additional fields on the Portfolio Item seen in the table are:
+* Actual - the number of test cases that have been executed, regardless of status.  
+* Passed - the percentage of test cases whose last verdict is Pass.
+* Planned - the percentage of test cases that should be run based on the ideal line from the portfolio item's Planned Start Date to the Planned End date (if Planned Start or End dates are not populated the Actual Start or End dates will be used.  Otherwise, there will be no value for planned).
+* Total - the total number of test cases for the portfolio item.  
+* Status - a summary of the test case status
+* Comments - A custom field (configurable via app settings) that is enabled for editing to provide comments onto the portfolio item.  
+
 
 ## Development Notes
 
